@@ -1,0 +1,7 @@
+{
+  "name": "ionic-ovdr-test",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
