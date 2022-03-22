@@ -24,3 +24,221 @@
 @import "~@ionic/angular/css/text-alignment.css";
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
+
+body {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 17px;
+    color: #36395A;
+    background-color: #00002a;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+*, *::before, *::after {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+#canvas-container {
+    /* border:#e3e3e4 1px solid; */
+    position: relative;
+    /* height: 100vh;
+    width: 100vw; */
+}
+
+#media-container {
+    display: flex;
+    /* height: 100vh;
+    width: 100vw; */
+}
+
+#tweeks {
+    display: flex;
+    position: fixed;
+    top: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: end !important;
+    align-content: space-between;
+    vertical-align: middle;
+    /* margin: auto 20px; */
+    padding: 10px;
+    z-index:90;
+    pointer-events: none;
+}
+
+#video-controls {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    flex-direction: row;
+    align-items: end !important;
+    align-content: space-between;
+    vertical-align: middle;
+    /* margin: auto 20px; */
+    padding: 10px;
+    z-index:90;
+    pointer-events: none;
+}
+
+button, .radio {
+    margin: 10px;
+    align-items: center;
+    appearance: none;
+    color: #36395A;
+    background-color: #e3e3e4;
+    border-radius: 4px;
+    border-width: 0;
+    box-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #bcbccc 0 -3px 0 inset;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: inline-flex;
+    height: 40px;
+    justify-content: center;
+    /* line-height: 1; */
+    list-style: none;
+    overflow: hidden;
+    padding-left: 10px;
+    padding-right: 10px;
+    /* position: relative; */
+    text-align: left;
+    text-decoration: none;
+    transition: transform .15s;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    white-space: nowrap;
+    will-change: box-shadow, transform;
+    padding: auto;
+    z-index: 10;
+    pointer-events: all;
+    -webkit-tap-highlight-color: transparent;
+    margin-right: 0;
+}
+
+.disabled, button:disabled, .disabled:hover, button:disabled {
+    visibility: hidden;
+    background-color: rgb(73, 63, 63);
+    box-shadow: rgba(76, 65, 100, 0.4) 0 2px 4px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #2e2e33 0 -3px 0 inset;
+    transform:unset;
+}
+
+
+button:focus {
+    /* box-shadow: #a1a1af 0 0 0 1.5px inset, rgba(30, 28, 58, 0.4) 0 2px 4px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #bcbccc 0 -3px 0 inset; */
+}
+/* 
+.radio:hover, button:hover {
+    box-shadow: rgba(35, 28, 51, 0.4) 0 4px 8px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #bcbccc 0 -3px 0 inset;
+    transform: translateY(-1px);
+} */
+
+button:active {
+    background-color: #666677;
+    color: #ffffff;
+    box-shadow: 0 15px 45px rgba(24, 249, 140, 0.034);
+    transform: translateY(1px);
+    border-bottom: 0;
+}
+
+input[type="radio"], input[type="checkbox"] {
+    -webkit-appearance: none;
+}
+
+input[type="radio"]:checked+label.radio {
+    background-color: #666677;
+    color: #ffffff;
+    box-shadow: 0 15px 45px rgba(24, 249, 140, 0.034);
+    transform: translateY(1px);
+}
+
+input[type="checkbox"]:checked+label.radio {
+    background-color: #666677;
+    color: #ff5e5e;
+    box-shadow: 0 15px 45px rgba(24, 249, 140, 0.034);
+    transform: translateY(1px);
+}
+
+i {
+    font-size: 25px;
+}
+
+#slider {
+    margin: 10px;
+    -webkit-appearance: none;
+    height: 15px;
+    border-radius: 5px;
+    background: #e3e3e4;
+    outline: none;
+    z-index: 10;
+    pointer-events: all;
+}
+
+#slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    /* border:#36395A 1px solid; */
+    background: #89899c;
+    cursor: pointer;
+}
+
+#slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #89899c;
+    cursor: pointer;
+}
+
+#colorPicker-container {
+    margin: 10px;
+    position: relative;
+    overflow: hidden;
+    width: 40px;
+    height: 40px;
+    border: solid 2px #ddd;
+    border-radius: 50%;
+    z-index: 10;
+}
+
+#colorPicker {
+    position: absolute;
+    right: -8px;
+    top: -8px;
+    width: 60px;
+    height: 60px;
+    border: none;
+    pointer-events: all;
+}
+
+.canvas {
+    /* width:auto;
+    height:100vh; */
+    /* height: auto;
+    width: 100vw; */
+ /* max-width: 100vw;
+    max-height: 100vh;
+    min-height: 100%; */
+}
+
+input:focus-visible {
+    outline-offset: unset;
+}
+
+
+.hidden_video {
+    visibility: hidden;
+    position: absolute;
+    z-index:-50;
+}
+
+.video {
+    width:auto
+    /* height: auto;
+    width: 100vw; */
+}
