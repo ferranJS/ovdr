@@ -7,27 +7,27 @@ import { Component } from '@angular/core';
 })
 export class HomePage {
   
-  btn_pintar: HTMLElement = null
-  btn_lineas: HTMLElement = null
-  btn_grab: HTMLElement = null
-  btn_borrar: HTMLElement = null
-  slider: any = null
-  colorPicker: any = null
-  modo: string = null
-  video_in: any = null
-  video_out: HTMLElement = null
-  c_out: any = null
-  ctx_out: any = null
-  c_tmp: any = null
-  ctx_tmp: any = null
-  c_nodes: any = null
-  ctx_nodes: any = null 
-  canvasContainer: HTMLElement = null
+  btn_pintar: HTMLElement
+  btn_lineas: HTMLElement
+  btn_grab: HTMLElement
+  btn_borrar: HTMLElement
+  slider: any
+  colorPicker: any
+  modo: string
+  video_in: any
+  video_out: HTMLElement
+  c_out: any
+  ctx_out: any
+  c_tmp: any
+  ctx_tmp: any
+  c_nodes: any
+  ctx_nodes: any 
+  canvasContainer: HTMLElement
   points: any = []
-  x: number = null
-  y: number  = null
-  x0: number = null
-  y0: number = null
+  x: number
+  y: number 
+  x0: number
+  y0: number
   clicking:boolean = false
   hasDragged = false
 
@@ -176,7 +176,7 @@ moveNode = (e: any) => {
 }
 
 // https://stackoverflow.com/questions/56147279/how-to-find-angle-between-two-vectors-on-canvas
-draw1Angle(point0: { y: number; x: number; }, point1: { y: number; x: number; }, point2: { y: number; x: number; }, color: string) { //, i, i_, j, j_
+draw1Angle = (point0: { y: number; x: number; }, point1: { y: number; x: number; }, point2: { y: number; x: number; }, color: string) => { //, i, i_, j, j_
   this.ctx_nodes.beginPath()
   this.ctx_nodes.globalCompositeOperation = 'destination-out'
   let firstAngle = Math.atan2(point1.y - point0.y, point1.x - point0.x)
@@ -392,7 +392,7 @@ init = () => {
   this.video_in.addEventListener('play', this.prepareCanvas)
 }
 
-prepareCanvas = () => {
+prepareCanvas=() => {
   this.c_out.setAttribute('width', this.video_in.videoWidth) // *2
   this.c_out.setAttribute('height', this.video_in.videoHeight) // *2
 
@@ -416,7 +416,7 @@ prepareCanvas = () => {
   this.computeFrame()
 }
 
-computeFrame(once=false) {
+computeFrame = (once=false) => {
   // if (video_in.paused || video_in.ended) { return  }
 
   this.ctx_out.drawImage(this.video_in, 0, 0, this.video_in.videoWidth, this.video_in.videoHeight)
@@ -608,7 +608,7 @@ undo = () => {
   this.drawNodes()
 }
 
-getPosition =(e: { type: string; originalEvent: any; clientX: number; clientY: number; }) => {
+getPosition = (e: { type: string; originalEvent: any; clientX: number; clientY: number; }) => {
   var rect = this.c_tmp.getBoundingClientRect()
   if (e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel') {
       var evt = (typeof e.originalEvent === 'undefined') ? e : e.originalEvent
@@ -678,7 +678,7 @@ shortenLog = () => {
 }
 
 
-ionViewWillEnter () {
+ionViewWillEnter  = () => {
   // console.log("this.initRecorder: ", this.initRecorder);
 
   // setTimeout(this.init,2000)
