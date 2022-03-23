@@ -4,8 +4,8 @@
 <script type="text/javascript" src="assets/js/main.js"></script> -->
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>
-       Z A A X
+    <ion-title style="white-space:nowrap;text-align:center">
+       Z A A X &nbsp;&nbsp; V I D E O &nbsp;&nbsp; A N A L I S Y S
     </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -66,16 +66,6 @@
 				<button (click)="next()">
 					<i class="fa fa-arrow-right" aria-hidden="true"></i>
 				</button>
-				<button id="goFS"><i class="fa fa-expand" aria-hidden="true"></i></button>
-				<script>
-					var goFS = document.getElementById("goFS");
-					goFS.addEventListener("click", function() {
-						if(document.fullscreenElement)
-							document.exitFullscreen()
-						else
-							document.body.requestFullscreen();
-					}, false);
-				</script>
 			</div>
 			<div id="video-controls">
 				<button id="playBtn">
