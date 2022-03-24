@@ -14,7 +14,7 @@ $~ npm install @capacitor/core
 
 
 
-$~npm install @capacitor/cli --save-dev
+$~ npm install @capacitor/cli --save-dev
 
 up to date, audited 1259 packages in 5s
 
@@ -30,3 +30,17 @@ Run `npm audit` for details.
 
 
 
+$~ ionic capacitor run android --list
+    > npm.cmd i -E @capacitor/android@latest
+
+    added 1 package, removed 1 package, and audited 1260 packages in 9s
+
+    139 packages are looking for funding
+    run `npm fund` for details
+
+    1 critical severity vulnerability
+
+    To address all issues, run:
+    npm audit fix
+
+Run `npm audit` for details.

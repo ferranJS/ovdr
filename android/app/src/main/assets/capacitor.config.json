@@ -1,0 +1,6 @@
+{
+	"appId": "com.zaax.video_analyzer",
+	"appName": "zaax-video-analyzer",
+	"webDir": "www",
+	"bundledWebRuntime": false
+}
