@@ -19,44 +19,44 @@
 				</div>
 				<input id="modoLineas" type="radio" name="modo" (click)="selectMode('lines')" checked>
 				<label for="modoLineas">
-					<i class="fa fa-slash" aria-hidden="true"></i>
+					<i class="fa fa-slash"></i>
 				</label>
 				<input id="modoPintar" type="radio" name="modo" (click)="selectMode('paint')">
 				<label for="modoPintar">
-					<i class="fa fa-pencil" aria-hidden="true"></i>
+					<i class="fa fa-pencil"></i>
 				</label>
 				<input id="modoCirculos" type="radio" name="modo" (click)="selectMode('circles')">
 				<label for="modoCirculos">
-					<i class="far fa-circle" aria-hidden="true"></i>
+					<i class="far fa-circle"></i>
 				</label>
 				<input id="modoGrab" type="radio" name="modo" (click)="modo = 'grab'">
 				<!-- <input id="modoBorrar" type="radio" name="modo" (click)="selectMode('borrar')" disabled>
 				<label for="modoBorrar" class="radio disabled">
-					<i class="fa fa-eraser" aria-hidden="true"></i>
+					<i class="fa fa-eraser"></i>
 				</label> -->
 				<input id="videoRecord" type="checkbox">
 				<label for="videoRecord">
-					<i class="fa fa-compact-disc" aria-hidden="true"></i>
+					<i class="fa fa-compact-disc"></i>
 				</label>
 				<button (click)="undo()">
-					<i class="fa fa-undo" aria-hidden="true"></i>
+					<i class="fa fa-undo"></i>
 				</button>
 				
 				<button (click)="clearCanvas()">
-					<i class="fa fa-trash" aria-hidden="true"></i>
+					<i class="fa fa-trash"></i>
 				</button>
 				<button (click)="next()">
-					<i class="fa fa-arrow-right" aria-hidden="true"></i>
+					<i class="fa fa-arrow-right"></i>
 				</button>
 			</div>
 			<div id="video-controls">
 				<button id="playBtn">
-					<i class="fa fa-pause" aria-hidden="true"></i>
+					<i class="fa fa-pause"></i>
 				</button>
 				<button id="speedBtn">
-					<i class="fa fa-clock" aria-hidden="true"></i>
+					<i class="fa fa-clock"></i>
 				</button>
-				<div id="timeline" style="width:300px"> | | | </div>
+				<div id="timeline" style="width:66vw"> | | | </div>
 			</div>
 		</div>
 	</div>
