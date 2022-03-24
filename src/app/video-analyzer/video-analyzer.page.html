@@ -1,12 +1,10 @@
 
-
 	<div id="media-container">
 		<!-- https://css-tricks.com/what-does-playsinline-mean-in-web-video/ -->
 		<video id="video_in" class="hidden_video" controls autoplay muted loop playsinline>
 			<source src="assets/video.mp4" type="video/mp4">
 		</video>
 		<video id="video_out" class="hidden_video" controls autoplay muted loop>
-			<!-- <label style="position:absolute;top:200px"> video result </label> -->
 		</video>
 
 		<div id="canvas-container">
@@ -20,28 +18,24 @@
 					<input id="colorPicker" type="color" name="head" value="#ffe5e5">
 				</div>
 				<input id="modoLineas" type="radio" name="modo" (click)="selectMode('lines')" checked>
-				<label for="modoLineas" class="radio">
+				<label for="modoLineas">
 					<i class="fa fa-slash" aria-hidden="true"></i>
 				</label>
 				<input id="modoPintar" type="radio" name="modo" (click)="selectMode('paint')">
-				<label for="modoPintar" class="radio">
+				<label for="modoPintar">
 					<i class="fa fa-pencil" aria-hidden="true"></i>
 				</label>
 				<input id="modoCirculos" type="radio" name="modo" (click)="selectMode('circles')">
-				<label for="modoCirculos" class="radio">
+				<label for="modoCirculos">
 					<i class="far fa-circle" aria-hidden="true"></i>
 				</label>
 				<input id="modoGrab" type="radio" name="modo" (click)="modo = 'grab'">
-				<!-- <label for="modoGrab" class="radio disabled">
-					<i class="fa fa-eraser" aria-hidden="true"></i>
-				</label> -->
-				<!-- 
-				<input id="modoBorrar" type="radio" name="modo" (click)="selectMode('borrar')" disabled>
+				<!-- <input id="modoBorrar" type="radio" name="modo" (click)="selectMode('borrar')" disabled>
 				<label for="modoBorrar" class="radio disabled">
 					<i class="fa fa-eraser" aria-hidden="true"></i>
 				</label> -->
 				<input id="videoRecord" type="checkbox">
-				<label for="videoRecord" class="radio">
+				<label for="videoRecord">
 					<i class="fa fa-compact-disc" aria-hidden="true"></i>
 				</label>
 				<button (click)="undo()">
@@ -51,7 +45,6 @@
 				<button (click)="clearCanvas()">
 					<i class="fa fa-trash" aria-hidden="true"></i>
 				</button>
-				<!-- <div style="width:20px;height:60px;"></div> -->
 				<button (click)="next()">
 					<i class="fa fa-arrow-right" aria-hidden="true"></i>
 				</button>
@@ -63,7 +56,7 @@
 				<button id="speedBtn">
 					<i class="fa fa-clock" aria-hidden="true"></i>
 				</button>
-				<div id="timeline" class="radio" style="width:300px"> | | | </div>
+				<div id="timeline" style="width:300px"> | | | </div>
 			</div>
 		</div>
 	</div>
