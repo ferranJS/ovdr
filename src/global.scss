@@ -60,7 +60,7 @@ body {
     top: 8vh;
     right: 0;
     flex-direction: column;
-    align-items: end !important;
+    align-items: flex-end !important;
     align-content: space-between;
     vertical-align: middle;
     /* margin: auto 20px; */
@@ -74,7 +74,7 @@ body {
     position: fixed;
     bottom: 0;
     flex-direction: row;
-    align-items: end !important;
+    align-items: flex-end !important;
     align-content: space-between;
     vertical-align: middle;
     /* margin: auto 20px; */
