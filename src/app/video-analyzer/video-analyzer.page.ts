@@ -12,7 +12,7 @@ export class VideoAnalyzerPage {
    private btnBorrar: HTMLElement
    private slider: any
    private colorPicker: any
-   private modo: string
+   public modo: string
    private video_in: any
    private video_out: HTMLElement
    private c_out: any
@@ -601,7 +601,7 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.strokeStyle = color
    }
 
-   private selectMode = (clickedMode: any) => {
+   public selectMode = (clickedMode: any) => {
       this.computeFrame(true)
 
       if (this.modo == clickedMode) this.btnGrab.click()
@@ -630,21 +630,21 @@ export class VideoAnalyzerPage {
          this.log.splice(0, 3)
    }
 
-   private undo = () => {
+   public undo = () => {
       if (this.log.length == 1) return
       this.log.pop()
       this.drawPaths()
       this.drawNodes()
    }
 
-   private clearCanvas = () => {
+   public clearCanvas = () => {
       if (!this.last().length) return
       this.ctx_nodes.clearRect(0, 0, this.c_nodes.width, this.c_nodes.height)
       this.ctx_tmp.clearRect(0, 0, this.c_tmp.width, this.c_tmp.height)
       this.log.push([])
    }
 
-   private next = () => {
+   public next = () => {
       if (this.video_in.className == "hidden_video" && this.video_out.className == "hidden_video") {
          this.video_in.className = "video"
       } else if (this.video_in.className == "video") {
