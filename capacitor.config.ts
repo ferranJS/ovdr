@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
-  appName: 'ionic-video-analyzer',
+  appName: 'zaax-video-analyzer',
   webDir: 'www',
   bundledWebRuntime: false
 };
