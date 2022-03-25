@@ -6,13 +6,13 @@ import { Component, OnInit } from '@angular/core';
    styleUrls: ['./video-analyzer.page.scss'],
 })
 export class VideoAnalyzerPage {
-   private btnPintar: HTMLElement
-   private btnLineas: HTMLElement
+   private btnPaint: HTMLElement
+   private btnLines: HTMLElement
    private btnGrab: HTMLElement
-   private btnBorrar: HTMLElement
+   private btnErase: HTMLElement
    private slider: any
    private colorPicker: any
-   private modo: string
+   private mode: string
    private video_in: any
    private video_out: HTMLElement
    private c_out: any
@@ -46,7 +46,7 @@ export class VideoAnalyzerPage {
    constructor() { }
 
    
-   private ionViewWillEnter() {
+   ionViewWillEnter() {
       this.slider = document.getElementById('slider')
       this.colorPicker = document.getElementById("colorPicker")
 
@@ -65,10 +65,10 @@ export class VideoAnalyzerPage {
       this.ctx_out.drawImage(this.c_tmp, 0, 0)
       // c_tmp.style.zIndex = 99
 
-      this.btnPintar = document.getElementById('modoPintar')
-      this.btnLineas = document.getElementById('modoLineas')
-      this.btnBorrar = document.getElementById('modoBorrar')
-      this.btnGrab = document.getElementById('modoGrab')
+      this.btnPaint = document.getElementById('modePaint')
+      this.btnLines = document.getElementById('modeLines')
+      this.btnGrab = document.getElementById('modeGrab')
+      this.btnErase = document.getElementById('modeErase')
 
       this.canvasContainer.addEventListener('touchstart', this.startAction)
       this.canvasContainer.addEventListener('touchleave', this.stopAction)
@@ -81,7 +81,7 @@ export class VideoAnalyzerPage {
       this.canvasContainer.addEventListener('mouseleave', this.stopAction)
       this.canvasContainer.addEventListener('mousemove', this.sketch)
 
-      this.slider.addEventListener('input', this.changeGrosor)
+      this.slider.addEventListener('input', this.changeThickness)
       this.colorPicker.addEventListener('input', this.changeColor)
 
       // velocidad del video
@@ -155,15 +155,15 @@ export class VideoAnalyzerPage {
       this.canvasContainer.setAttribute('width', this.video_in.videoWidth) // *2
       this.canvasContainer.setAttribute('height', this.video_in.videoHeight) // *2
 
-      this.changeGrosor(null)
+      this.changeThickness(null)
       this.ctx_tmp.strokeStyle = this.colorPicker.value
       this.ctx_tmp.lineCap = 'round'
       this.ctx_nodes.lineWidth = this.slider.value
 
-      this.btnLineas.click()  // botón presionado inicial!
+      this.btnLines.click()  // botón presionado inicial!
 
       // video_in.removeEventListener('play', prepareCanvas)
-      this.computeFrame()
+      setInterval(this.computeFrame,0)
    }
 
    private computeFrame = (once = false) => {
@@ -174,9 +174,9 @@ export class VideoAnalyzerPage {
 
       // let frame = ctx_out.reateImageData()    //no
       // let frame = document.createElement('ImageData')
-      let frame = new Image()
+      // let frame = new Image()
       // let frame = new ImageData(video_in.videoWidth, video_in.videoHeight)
-      frame.crossOrigin = "anonymous"
+      // frame.crossOrigin = "anonymous"
 
       // ctx_out.drawImage(c_nodes, 0, 0, video_in.videoWidth*2, video_in.videoHeight*2, 0, 0, video_in.videoWidth*4, video_in.videoHeight*4)
       // ctx_out.drawImage(c_tmp, 0, 0, video_in.videoWidth*2, video_in.videoHeight*2, 0, 0, video_in.videoWidth*4, video_in.videoHeight*4)
@@ -186,8 +186,10 @@ export class VideoAnalyzerPage {
       setTimeout(this.computeFrame, 0)
    }
 
-   private startCircle = () => {
-      [this.x0, this.y0] = [this.x, this.y]
+   private startCircle = (e) => {
+      this.getPosition(e)
+      this.x0 = this.x
+      this.y0 = this.y
    }
 
    private previewCircle = (e: any) => {
@@ -195,12 +197,13 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.beginPath()
       this.getPosition(e)
       this.ctx_tmp.arc(...this.midpoint(this.x0, this.y0, this.x, this.y), this.radius(this.x0, this.y0, this.x, this.y), 0, 2 * Math.PI)
-      this.changeGrosor(4)
+      this.changeThickness(4)
       this.ctx_tmp.stroke()
-      this.changeGrosor(null)
+      this.changeThickness(null)
    }
 
-   private startLine = () => {
+   private startLine = (e) => {
+      this.getPosition(e)
       if (!this.last().some(path => {  //requiere array no modif
          if (path.type != "line") return
          if (this.overNode(path.points[0])) {
@@ -236,10 +239,11 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.stroke()
    }
 
-   private grabNode = () => {
+   private grabNode = (e) => {
+      this.getPosition(e)
       this.last().some((path, i) => {
          if (path.type != "line") return //no interactuar consigo misma
-         // if(path.type!="line" || (modo == "grab" && grabedNodes.some(node => node.i == i || (node.i != i && ((path.points[0].x == last()[node.i].points[node.j].x && path.points[0].y == last()[node.i].points[node.j].y) || (path.points[1].x == last()[node.i].points[node.j].x && path.points[1].y == last()[node.i].points[node.j].y)) )))) return //no interactuar consigo misma
+         // if(path.type!="line" || (mode == "grab" && grabedNodes.some(node => node.i == i || (node.i != i && ((path.points[0].x == last()[node.i].points[node.j].x && path.points[0].y == last()[node.i].points[node.j].y) || (path.points[1].x == last()[node.i].points[node.j].x && path.points[1].y == last()[node.i].points[node.j].y)) )))) return //no interactuar consigo misma
 
          if (this.overNode(path.points[0])) {
             [this.x0, this.y0] = [path.points[0].x, path.points[0].y]
@@ -276,39 +280,41 @@ export class VideoAnalyzerPage {
    }
 
    private startAction = (e: any) => {
-      if (this.last().length > 17 && this.modo != "grab") return
+
+      if (this.last().length > 17 && this.mode != "grab") return
+      // var before = performance.now() 
       this.clicking = true
       this.x0 = this.x
       this.y0 = this.y
-      this.getPosition(e)
-      if (this.modo == "paint") {
+      if (this.mode == "paint") {
+         this.getPosition(e)
          this.points = []
          this.points.push({ x: this.x, y: this.y })
-      } else if (this.modo == "lines")
-         this.startLine()
-      else if (this.modo == "circles")
-         this.startCircle()
-      else if (this.modo == "grab")
-         this.grabNode()
+      } else if (this.mode == "lines")
+         this.startLine(e)
+      else if (this.mode == "circles")
+         this.startCircle(e)
+      else if (this.mode == "grab")
+         this.grabNode(e)
       this.clicking = true
-
+      // console.log((performance.now()-before)/3)
    }
 
    private stopAction = (e: any) => {
       try {
          if (this.clicking) {
             if (this.hasDragged) {
-               if (this.modo == "grab" && this.grabedNodes.length || this.modo != "grab") {
+               if (this.mode == "grab" && this.grabedNodes.length || this.mode != "grab") {
                   this.log.push([])
                   this.fillLastLog()
                }
                this.getPosition(e)
-               if (this.modo == "lines" || this.modo == "grab" && this.grabedNodes.length) {
+               if (this.mode == "lines" || this.mode == "grab" && this.grabedNodes.length) {
                   let p_x: any, p_y: any
                   // conectar con un nodo!
                   this.last().some((path) => {
                      if (path.type != "line") return //no interactuar consigo misma
-                     // if(path.type!="line" || (modo == "grab" && grabedNodes.some(node => node.i == i || (node.i != i && ((path.points[0].x == last()[node.i].points[node.j].x && path.points[0].y == last()[node.i].points[node.j].y) || (path.points[1].x == last()[node.i].points[node.j].x && path.points[1].y == last()[node.i].points[node.j].y)) )))) return //no interactuar consigo misma
+                     // if(path.type!="line" || (mode == "grab" && grabedNodes.some(node => node.i == i || (node.i != i && ((path.points[0].x == last()[node.i].points[node.j].x && path.points[0].y == last()[node.i].points[node.j].y) || (path.points[1].x == last()[node.i].points[node.j].x && path.points[1].y == last()[node.i].points[node.j].y)) )))) return //no interactuar consigo misma
 
                      if (this.overNode(path.points[0])) {
                         [p_x, p_y] = [path.points[0].x, path.points[0].y]; return true
@@ -318,22 +324,22 @@ export class VideoAnalyzerPage {
                   })
                   let origen = { x: this.x0, y: this.y0 }
                   let destino = { x: p_x || this.x, y: p_y || this.y }
-                  if (this.modo == "lines")
-                     this.last().push({ points: [origen, destino], type: "line", color: this.colorPicker.value, grosor: this.slider.value })
-                  else if (this.modo == "grab") {
+                  if (this.mode == "lines")
+                     this.last().push({ points: [origen, destino], type: "line", color: this.colorPicker.value, thickness: this.slider.value })
+                  else if (this.mode == "grab") {
                      this.grabedNodes.forEach(node => {
                         this.last()[node.i].points[node.j] = destino
                         this.log[this.log.length - 2][node.i].points[node.j] = origen
                      })
                      this.grabedNodes = []
                   }
-               } else if (this.modo == "paint")
-                  this.last().push({ points: this.points, type: "raya", color: this.colorPicker.value, grosor: this.slider.value })
-               else if (this.modo == "circles") {
+               } else if (this.mode == "paint")
+                  this.last().push({ points: this.points, type: "raya", color: this.colorPicker.value, thickness: this.slider.value })
+               else if (this.mode == "circles") {
                   this.midpoint(this.x0, this.y0, this.x, this.y)
                   this.last().push({ point: this.midpoint(this.x0, this.y0, this.x, this.y), radius: this.radius(this.x0, this.y0, this.x, this.y), type: "circle", color: this.colorPicker.value })
                }
-               // else if(modo == "borrar")
+               // else if(mode == "borrar")
                // console.log(log)
             }
          }
@@ -342,7 +348,7 @@ export class VideoAnalyzerPage {
       this.hasDragged = false
       this.clicking = false
       this.drawPaths()  // EN PRINCIPIO SOBRARÍA PERO NO HACE DAÑO
-      if (this.modo != "paint") this.drawNodes()
+      if (this.mode != "paint") this.drawNodes()
       this.shortenLog()
    }
 
@@ -350,11 +356,11 @@ export class VideoAnalyzerPage {
    private sketch = (e: any) => {
       if (!this.clicking) return
       this.hasDragged = true
-      if (this.modo == "paint") this.paint(e)
-      // else if(modo == "borrar") erase(e)
-      else if (this.modo == "lines") this.previewLine(e)
-      else if (this.modo == "circles") this.previewCircle(e)
-      else if (this.modo == "grab")
+      if (this.mode == "paint") this.paint(e)
+      // else if(mode == "borrar") erase(e)
+      else if (this.mode == "lines") this.previewLine(e)
+      else if (this.mode == "circles") this.previewCircle(e)
+      else if (this.mode == "grab")
          if (this.grabedNodes.length) this.moveNode(e)
    }
 
@@ -412,11 +418,11 @@ export class VideoAnalyzerPage {
                this.ctx_tmp.beginPath()
                this.ctx_tmp.strokeStyle = path.color
                this.ctx_tmp.arc(...path.point, path.radius, 0, 2 * Math.PI)
-               this.changeGrosor(4)
+               this.changeThickness(4)
                this.ctx_tmp.stroke()
                return
             }
-            this.ctx_tmp.lineWidth = path.grosor
+            this.ctx_tmp.lineWidth = path.thickness
             this.ctx_tmp.strokeStyle = path.color
             this.ctx_tmp.beginPath()
             this.ctx_tmp.moveTo(path.points[0].x, path.points[0].y)
@@ -428,7 +434,7 @@ export class VideoAnalyzerPage {
          })
       } catch (e) { console.log("error al dibujar los elementos!: \n" + e) }
       this.changeColor()
-      this.changeGrosor(null)
+      this.changeThickness(null)
    }
    
    private midpoint = (x1: any, y1: any, x2: any, y2: any) => {
@@ -569,7 +575,7 @@ export class VideoAnalyzerPage {
       this.colorPicker.value = color
    }
 
-   private changeGrosor = (grosor: number) => { this.ctx_tmp.lineWidth = grosor || this.slider.value }
+   private changeThickness = (thickness: number) => { this.ctx_tmp.lineWidth = thickness || this.slider.value }
 
    private changeLineColor = () => {
       let color = "#"
@@ -604,9 +610,9 @@ export class VideoAnalyzerPage {
    private selectMode = (clickedMode: any) => {
       this.computeFrame(true)
 
-      if (this.modo == clickedMode) this.btnGrab.click()
-      else this.modo = clickedMode
-      if (this.modo == "paint" || this.modo == "circle") this.ctx_nodes.clearRect(0, 0, this.c_nodes.width, this.c_nodes.height)
+      if (this.mode == clickedMode) this.btnGrab.click()
+      else this.mode = clickedMode
+      if (this.mode == "paint" || this.mode == "circle") this.ctx_nodes.clearRect(0, 0, this.c_nodes.width, this.c_nodes.height)
       else this.drawNodes()
    }
 
@@ -618,7 +624,7 @@ export class VideoAnalyzerPage {
             this.log[this.log.length - 1].push({ point: [...path.point], radius: path.radius, type: path.type, color: path.color })
             return
          }
-         this.log[this.log.length - 1].push({ points: [], type: path.type, color: path.color, grosor: path.grosor })
+         this.log[this.log.length - 1].push({ points: [], type: path.type, color: path.color, thickness: path.thickness })
          path.points.forEach((punto: { x: any; y: any; }) => {
             this.log[this.log.length - 1][i].points.push({ x: punto.x, y: punto.y })
          })
@@ -634,7 +640,8 @@ export class VideoAnalyzerPage {
       if (this.log.length == 1) return
       this.log.pop()
       this.drawPaths()
-      this.drawNodes()
+      if (this.mode == "paint" || this.mode == "circle") this.ctx_nodes.clearRect(0, 0, this.c_nodes.width, this.c_nodes.height)
+      else this.drawNodes()
    }
 
    private clearCanvas = () => {

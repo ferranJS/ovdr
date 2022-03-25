@@ -17,21 +17,21 @@
 				<div id="colorPicker-container">
 					<input id="colorPicker" type="color" name="head" value="#ffe5e5">
 				</div>
-				<input id="modoLineas" type="radio" name="modo" (click)="selectMode('lines')" checked>
-				<label for="modoLineas">
+				<input id="modeLines" type="radio" name="mode" (click)="selectMode('lines')" checked>
+				<label for="modeLines">
 					<i class="fa fa-slash"></i>
 				</label>
-				<input id="modoPintar" type="radio" name="modo" (click)="selectMode('paint')">
-				<label for="modoPintar">
+				<input id="modePaint" type="radio" name="mode" (click)="selectMode('paint')">
+				<label for="modePaint">
 					<i class="fa fa-pencil"></i>
 				</label>
-				<input id="modoCirculos" type="radio" name="modo" (click)="selectMode('circles')">
-				<label for="modoCirculos">
+				<input id="modeCircles" type="radio" name="mode" (click)="selectMode('circles')">
+				<label for="modeCircles">
 					<i class="far fa-circle"></i>
 				</label>
-				<input id="modoGrab" type="radio" name="modo" (click)="modo = 'grab'">
-				<!-- <input id="modoBorrar" type="radio" name="modo" (click)="selectMode('borrar')" disabled>
-				<label for="modoBorrar" class="radio disabled">
+				<input id="modeGrab" type="radio" name="mode" (click)="mode = 'grab'">
+				<!-- <input id="modeBorrar" type="radio" name="mode" (click)="selectMode('borrar')" disabled>
+				<label for="modeBorrar" class="radio disabled">
 					<i class="fa fa-eraser"></i>
 				</label> -->
 				<input id="videoRecord" type="checkbox">
