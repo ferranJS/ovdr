@@ -607,7 +607,7 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.strokeStyle = color
    }
 
-   private selectMode = (clickedMode: any) => {
+   public selectMode = (clickedMode: any) => {
       this.computeFrame(true)
 
       if (this.mode == clickedMode) this.btnGrab.click()

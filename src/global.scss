@@ -204,16 +204,6 @@ input[type="checkbox"]:checked + label {
     pointer-events: all;
 }
 
-.canvas {
-    /* width:auto;
-    height:100vh; */
-    /* height: auto;
-    width: 100vw; */
- /* max-width: 100vw;
-    max-height: 100vh;
-    min-height: 100%; */
-}
-
 .disabled, button:disabled, .disabled:hover {
     visibility: hidden;
     background-color: rgb(73, 63, 63);
