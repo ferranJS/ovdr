@@ -110,6 +110,7 @@ export class VideoAnalyzerPage {
       }
       navigator.mediaDevices.getUserMedia(this.constraintObj)
          .then((audioStreamObj) => {
+            console.log("audioStreamObj: ", audioStreamObj);
             let videoRecordBtn = document.getElementById('videoRecord')
             let vidSave = document.getElementById('video_out')
             let canvasStreamObj = this.c_out.captureStream(40 /*fps*/)
@@ -139,7 +140,7 @@ export class VideoAnalyzerPage {
                this.video_in.className = "hidden_video"
                this.video_out.className = "video"
             }
-         })
+         }) .catch(err => { console.log(err.name, err.message) })
    }
 
    private prepareCanvas = () => {
