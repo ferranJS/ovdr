@@ -163,10 +163,10 @@ export class VideoAnalyzerPage {
       this.btnLines.click()  // botón presionado inicial!
 
       // video_in.removeEventListener('play', prepareCanvas)
-      setInterval(this.computeFrame,0)
+      this.computeFrame()
    }
 
-   private computeFrame = (once = false) => {
+   private computeFrame = () => {
       // if (video_in.paused || video_in.ended) { return  }
 
       this.ctx_out.drawImage(this.video_in, 0, 0, this.video_in.videoWidth, this.video_in.videoHeight)
@@ -182,7 +182,6 @@ export class VideoAnalyzerPage {
       // ctx_out.drawImage(c_tmp, 0, 0, video_in.videoWidth*2, video_in.videoHeight*2, 0, 0, video_in.videoWidth*4, video_in.videoHeight*4)
       this.ctx_out.drawImage(this.c_tmp, 0, 0)
       this.ctx_out.drawImage(this.c_nodes, 0, 0)
-      if (once) return
       setTimeout(this.computeFrame, 0)
    }
 
@@ -607,9 +606,7 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.strokeStyle = color
    }
 
-   private selectMode = (clickedMode: any) => {
-      this.computeFrame(true)
-
+   public selectMode = (clickedMode: any) => {
       if (this.mode == clickedMode) this.btnGrab.click()
       else this.mode = clickedMode
       if (this.mode == "paint" || this.mode == "circle") this.ctx_nodes.clearRect(0, 0, this.c_nodes.width, this.c_nodes.height)
