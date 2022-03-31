@@ -18,9 +18,5 @@
 	{
 		"pkg": "@capacitor/status-bar",
 		"classpath": "com.capacitorjs.plugins.statusbar.StatusBarPlugin"
-	},
-	{
-		"pkg": "capacitor-voice-recorder",
-		"classpath": "com.tchvu3.capacitorvoicerecorder.VoiceRecorder"
 	}
 ]

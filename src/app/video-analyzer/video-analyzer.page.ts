@@ -37,14 +37,7 @@ export class VideoAnalyzerPage {
    private grabedNodes = []
    private nodeRadius = 11
 
-   // access microphone 
-   private constraintObj = {
-      audio: true,
-      video: false
-   }
-
    constructor() { }
-
    
    ionViewWillEnter() {
       this.slider = document.getElementById('slider')
@@ -88,27 +81,35 @@ export class VideoAnalyzerPage {
       this.video_in.playbackRate = 1
       this.initRecorder()
       this.video_in.addEventListener('play', this.prepareCanvas)
+
    }
 
    private initRecorder = () => {
-      if (navigator.mediaDevices === undefined) {
-         // navigator['mediaDevices'] = {}   //dice q es read-only
-         navigator.mediaDevices.getUserMedia = function (constraintObj) {
-            let getUserMedia = navigator['webkitGetUserMedia'] || navigator['mozGetUserMedia']
-            if (!getUserMedia) {
-               return Promise.reject(new Error('getUserMedia is not implemented in this browser'))
-            }
-            return new Promise(function (resolve, reject) {
-               getUserMedia.call(navigator, constraintObj, resolve, reject)
-            })
-         }
-      } else {
-         navigator.mediaDevices.enumerateDevices().then(devices => {
-            devices.forEach(device => { console.log(device.kind.toUpperCase(), device.label) })
-         })
-            .catch(err => { console.log(err.name, err.message) })
-      }
-      navigator.mediaDevices.getUserMedia(this.constraintObj)
+      console.log("naviii", navigator)
+      // if (navigator.mediaDevices === undefined) {
+      //    // navigator['mediaDevices'] = {}   //dice q es read-only
+      //    navigator.mediaDevices.getUserMedia = function (constraintObj) {
+      //       let getUserMedia = navigator['webkitGetUserMedia'] || navigator['mozGetUserMedia']
+      //       if (!getUserMedia) {
+      //          return Promise.reject(new Error('getUserMedia is not implemented in this browser'))
+      //       }
+      //       return new Promise(function (resolve, reject) {
+      //          getUserMedia.call(navigator, constraintObj, resolve, reject)
+      //       })
+      //    }
+      // } else {
+      // }
+      // navigator.mediaDevices.enumerateDevices().then(devices => {
+      //    devices.forEach(device => { console.log(device.kind.toUpperCase(), device.label) })
+      // }).catch(err => { console.log(err.name, err.message) })
+
+   // access microphone 
+   let constraintObj = {
+      audio: true,
+      video: false
+   }
+
+      navigator.mediaDevices.getUserMedia(constraintObj)
          .then((audioStreamObj) => {
             console.log("audioStreamObj: ", audioStreamObj);
             let videoRecordBtn = document.getElementById('videoRecord')
@@ -140,7 +141,8 @@ export class VideoAnalyzerPage {
                this.video_in.className = "hidden_video"
                this.video_out.className = "video"
             }
-         }) .catch(err => { console.log(err.name, err.message) })
+         }) 
+         // .catch(err => { console.log(err) })
    }
 
    private prepareCanvas = () => {
@@ -612,6 +614,9 @@ export class VideoAnalyzerPage {
       else this.mode = clickedMode
       if (this.mode == "paint" || this.mode == "circle") this.ctx_nodes.clearRect(0, 0, this.c_nodes.width, this.c_nodes.height)
       else this.drawNodes()
+      let doc: any = document.querySelector('input[name="mode"]:checked')
+      console.log(" document",  doc.value);
+
    }
 
    private last = () => { return this.log[this.log.length - 1] || [] }
