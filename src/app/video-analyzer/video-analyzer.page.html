@@ -1,8 +1,8 @@
 
 	<div id="media-container">
-		<!-- https://css-tricks.com/what-does-playsinline-mean-in-web-video/ -->
-		<video id="video_in" class="hidden_video" controls  muted loop playsinline>
-			<!-- autoplay -->
+		<!-- https://css-tricks.com/what-does-playsinline-mean-in-web-video/ --> 
+		<!-- muted not working -->
+		<video id="video_in" class="hidden_video" controls autoplay muted loop playsinline>
 			<source src="assets/video.mp4" type="video/mp4">
 		</video>
 		<video id="video_out" class="hidden_video" controls autoplay muted loop>
@@ -26,7 +26,7 @@
 				<label for="modePaint">
 					<i class="fa fa-pencil"></i>
 				</label>
-				<input id="modeCircles" type="radio" name="mode" [(value)]="mode" (click)="selectMode('circles')">
+				<input id="modeCircles" type="radio" name="mode" (click)="selectMode('circles')">
 				<label for="modeCircles">
 					<i class="far fa-circle"></i>
 				</label>
@@ -35,7 +35,7 @@
 				<label for="modeBorrar" class="radio disabled">
 					<i class="fa fa-eraser"></i>
 				</label> -->
-				<input id="videoRecord" type="checkbox">
+				<input id="videoRecord" type="checkbox" [(ngModel)]="recording">
 				<label for="videoRecord">
 					<i class="fa fa-compact-disc"></i>
 				</label>
