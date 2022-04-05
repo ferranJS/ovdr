@@ -156,6 +156,7 @@ export class VideoAnalyzerPage {
    }
 
    prepareCanvas = () => {
+      this.video_in.removeEventListener('play', this.prepareCanvas)
       this.c_out.setAttribute('width', this.video_in.videoWidth) // *2
       this.c_out.setAttribute('height', this.video_in.videoHeight) // *2
 
@@ -172,7 +173,6 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.strokeStyle = this.colorPicker.value
       this.ctx_tmp.lineCap = 'round'
       this.ctx_nodes.lineWidth = this.slider.value
-
       this.btnLines.click()  // botón presionado inicial!
 
       // video_in.removeEventListener('play', prepareCanvas)
@@ -524,6 +524,7 @@ export class VideoAnalyzerPage {
    }
 
    drawNodes = () => {
+      // setTimeout(() => {
       this.ctx_nodes.clearRect(0, 0, this.c_nodes.width, this.c_nodes.height)
       let pairs = []
       this.last().some((path, i) => {
@@ -554,6 +555,7 @@ export class VideoAnalyzerPage {
             }
          })
       })
+      // }, 0)
    }
 
    getPosition = (e: { type: string; originalEvent: any; clientX: number; clientY: number; }) => {
@@ -622,16 +624,18 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.strokeStyle = color
    }
 
-   selectMode = (clickedMode: any) => {
+   selectMode = (clickedMode: string) => {
       if (this.mode == clickedMode) this.btnGrab.click()
       else this.mode = clickedMode
-      if (this.mode == "paint" || this.mode == "circle") this.ctx_nodes.clearRect(0, 0, this.c_nodes.width, this.c_nodes.height)
+      if (this.mode == "paint" || this.mode == "circle") 
+         this.ctx_nodes.clearRect(0, 0, this.c_nodes.width, this.c_nodes.height)
       else this.drawNodes()
    }
 
+   // retorna la referencia a la última versión(log) del canvas
    last = () => { return this.log[this.log.length - 1] || [] }
 
-   fillLastLog = () => { //los arrays solo se puede copiar así 
+   fillLastLog = () => { // los arrays solo se puede copiar así 
       this.log[this.log.length - 2].forEach((path, i) => {
          if (path.type == "circle") {
             this.log[this.log.length - 1].push({ point: [...path.point], radius: path.radius, type: path.type, color: path.color })
