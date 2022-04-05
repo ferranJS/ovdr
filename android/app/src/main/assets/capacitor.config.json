@@ -2,8 +2,5 @@
 	"appId": "com.zaax.video_analyzer_android",
 	"appName": "zaax-video-analyzer",
 	"webDir": "www",
-	"bundledWebRuntime": false,
-	"server": {
-		"url": "http://192.168.1.137:8101"
-	}
+	"bundledWebRuntime": false
 }
