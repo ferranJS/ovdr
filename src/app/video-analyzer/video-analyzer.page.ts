@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { NavigationExtras, Router } from '@angular/router';
 
 @Component({
    selector: 'video-analyzer',
@@ -10,11 +11,12 @@ export class VideoAnalyzerPage {
    btnLines: HTMLElement
    btnGrab: HTMLElement
    btnErase: HTMLElement
+   btnRecord: HTMLElement
    slider: any
    colorPicker: any
    mode: string
    video_in: any
-   video_out: HTMLElement
+   // video_out: any
    c_out: any
    ctx_out: any
    c_tmp: any
@@ -28,32 +30,26 @@ export class VideoAnalyzerPage {
    y: number
    x0: number // x e y inicial (asignados una vez x línea/círculo)
    y0: number
+   
    clicking: boolean = false
    hasDragged = false
-   recording = false
-
-   playbackRate = 1
 
    log = [[]] // historial de dibujado
 
    grabedNodes = []
    nodeRadius = 11
 
-   // access microphone 
-   constraintObj = {
-      audio: true,
-      video: false
-   }
+   mediaRecorder: MediaRecorder
+   recording = false
 
-   constructor() { }
-
+   constructor(private router: Router) { }
    
    ionViewWillEnter() {
       this.slider = document.getElementById('slider')
       this.colorPicker = document.getElementById("colorPicker")
 
       this.video_in = document.getElementById('video_in')
-      this.video_out = document.getElementById('video_out')
+      // this.video_out = document.getElementById('video_out')
 
       this.c_out = document.getElementById('output-canvas')
       this.ctx_out = this.c_out.getContext('2d')
@@ -71,6 +67,7 @@ export class VideoAnalyzerPage {
       this.btnLines = document.getElementById('modeLines')
       this.btnGrab = document.getElementById('modeGrab')
       this.btnErase = document.getElementById('modeErase')
+      this.btnRecord = document.getElementById('videoRecord')
 
       this.canvasContainer.addEventListener('touchstart', this.startAction)
       this.canvasContainer.addEventListener('touchleave', this.stopAction)
@@ -87,62 +84,81 @@ export class VideoAnalyzerPage {
       this.colorPicker.addEventListener('input', this.changeColor)
 
       // velocidad del video
-      this.video_in.playbackRate = this.playbackRate
-      this.initRecorder()
+      this.video_in.playbackRate = 1
+
       this.video_in.addEventListener('play', this.prepareCanvas)
+      this.btnRecord.addEventListener('click', () => {
+         if (this.recording) this.stopRecording()
+         else this.startRecording()
+      })
+      this.video_in.muted = true  //hay q hacerlo manual xq en html no va
    }
 
-   initRecorder = () => {
-      if (navigator.mediaDevices === undefined) {
-         // navigator['mediaDevices'] = {}   //dice q es read-only
-         navigator.mediaDevices.getUserMedia = function (constraintObj) {
-            let getUserMedia = navigator['webkitGetUserMedia'] || navigator['mozGetUserMedia']
-            if (!getUserMedia) {
-               return Promise.reject(new Error('getUserMedia is not implemented in this browser'))
-            }
-            return new Promise(function (resolve, reject) {
-               getUserMedia.call(navigator, constraintObj, resolve, reject)
-            })
-         }
-      } else {
-         navigator.mediaDevices.enumerateDevices().then(devices => {
-            devices.forEach(device => { console.log(device.kind.toUpperCase(), device.label) })
-         })
-            .catch(err => { console.log(err.name, err.message) })
+      // if (navigator.mediaDevices === undefined) {
+      //    // navigator['mediaDevices'] = {}   //dice q es read-only
+      //    navigator.mediaDevices.getUserMedia = function (constraintObj) {
+      //       let getUserMedia = navigator['webkitGetUserMedia'] || navigator['mozGetUserMedia']
+      //       if (!getUserMedia) {
+      //          return Promise.reject(new Error('getUserMedia is not implemented in this browser'))
+      //       }
+      //       return new Promise(function (resolve, reject) {
+      //          getUserMedia.call(navigator, constraintObj, resolve, reject)
+      //       })
+      //    }
+      // }
+
+    //////  DOCS  //////
+   // https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/MediaRecorder
+   // CODECS https://developer.mozilla.org/en-US/docs/Web/Media/Formats/codecs_parameter
+   async startRecording() {
+      console.log("recording");
+      let devices = navigator.mediaDevices
+
+      // devices.enumerateDevices().then(devices => {
+      //    devices.forEach(device => { console.log(device.kind.toUpperCase(), device.label) })
+      // }).catch(err => { console.log(err.name, err.message. err) })
+      // console.log(MediaRecorder.isTypeSupported('video/webm;codecs=h264'))
+      
+      const audioStream = await devices.getUserMedia({
+         audio: true,
+         video: false
+      })
+      const canvasStream = this.c_out.captureStream(40 /*fps*/)
+      const combinedStream = new MediaStream([
+         ...audioStream.getAudioTracks(), ...canvasStream.getVideoTracks()
+      ])
+      // this.video_out.srcObject = combinedStream
+
+      const options = { mimeType: 'video/webm; codecs=vp9' } // codecs=vp9
+      this.mediaRecorder = new MediaRecorder(combinedStream, options)
+      let chunks = []
+
+      this.mediaRecorder.ondataavailable = (ev: any) => {
+         if(ev.data && ev.data.size > 0) 
+            chunks.push(ev.data)
       }
-      navigator.mediaDevices.getUserMedia(this.constraintObj)
-         .then((audioStreamObj) => {
-            console.log("audioStreamObj: ", audioStreamObj);
-            let videoRecordBtn = document.getElementById('videoRecord')
-            let vidSave = document.getElementById('video_out')
-            let canvasStreamObj = this.c_out.captureStream(40 /*fps*/)
-            let combinedStreamObj = new MediaStream([...audioStreamObj.getAudioTracks(), ...canvasStreamObj.getVideoTracks()])
-            let mediaRecorder = new MediaRecorder(combinedStreamObj)
-            let chunks = []
 
-            videoRecordBtn.addEventListener('click', () => {
-               if (this.recording) {
-                  mediaRecorder.stop()
-               } else {
-                  mediaRecorder.start()
-               }
-               this.recording = !this.recording
-               console.log(mediaRecorder.state)
-            })
-            mediaRecorder.ondataavailable = function (ev) {
-               chunks.push(ev.data)
-            }
-            mediaRecorder.onstop = (ev) => {
-               let blob = new Blob(chunks, { 'type': 'video/mp4' })
-               chunks = []
-               let videoURL = window.URL.createObjectURL(blob)
-               vidSave['src'] = videoURL
+      this.mediaRecorder.onstop = (ev) => {
+         const blob = new Blob(chunks, { 'type': 'video/webm' })
+         // this.video_out['src'] = window.URL.createObjectURL(blob)
+         const params : NavigationExtras = {
+            queryParams: {src: window.URL.createObjectURL(blob)}
+         }
+         this.router.navigate(['video-analyzer/result'], params)
+         console.log("params: ", params);
 
-               // que pase al vídeo resultado !!!
-               this.video_in.className = "hidden_video"
-               this.video_out.className = "video"
-            }
-         }) .catch(err => { console.log(err.name, err.message) })
+         // que pase al vídeo resultado !!!
+         this.video_in.className = "hidden_video"
+         // this.video_out.className = "video"
+      }
+      this.mediaRecorder.start()
+   }
+
+   stopRecording() {
+      console.log("recording stopped");
+      this.mediaRecorder.stop()
+      this.mediaRecorder = null
+      // this.video_out.srcObject = null
    }
 
    prepareCanvas = () => {
@@ -198,7 +214,9 @@ export class VideoAnalyzerPage {
       this.drawPaths()
       this.ctx_tmp.beginPath()
       this.getPosition(e)
-      this.ctx_tmp.arc(...this.midpoint(this.x0, this.y0, this.x, this.y), this.radius(this.x0, this.y0, this.x, this.y), 0, 2 * Math.PI)
+      this.ctx_tmp.arc(
+         ...this.midpoint(this.x0, this.y0, this.x, this.y), this.radius(this.x0, this.y0, this.x, this.y), 0, 2 * Math.PI
+      )
       this.changeThickness(4)
       this.ctx_tmp.stroke()
       this.changeThickness(null)
@@ -206,15 +224,16 @@ export class VideoAnalyzerPage {
 
    startLine = (e) => {
       this.getPosition(e)
-      if (!this.last().some(path => {  //requiere array no modif
-         if (path.type != "line") return
-         if (this.overNode(path.points[0])) {
-            [this.x0, this.y0] = [path.points[0].x, path.points[0].y]; return true
-         }
-         if (this.overNode(path.points[1])) {
-            [this.x0, this.y0] = [path.points[1].x, path.points[1].y]; return true
-         }
-      })) {
+      if(!this.last().some(path => {  //requiere array no modif
+            if (path.type != "line") return
+            if (this.overNode(path.points[0])) {
+               [this.x0, this.y0] = [path.points[0].x, path.points[0].y]; return true
+            }
+            if (this.overNode(path.points[1])) {
+               [this.x0, this.y0] = [path.points[1].x, path.points[1].y]; return true
+            }
+         })
+      ) {
          [this.x0, this.y0] = [this.x, this.y]
       }
       this.draw1Node(this.x0, this.y0, this.colorPicker.value)
@@ -656,13 +675,13 @@ export class VideoAnalyzerPage {
    }
 
    next = () => {
-      if (this.video_in.className == "hidden_video" && this.video_out.className == "hidden_video") {
+      if (this.video_in.className == "hidden_video") { // && this.video_out.className == "hidden_video"
          this.video_in.className = "video"
       } else if (this.video_in.className == "video") {
          this.video_in.className = "hidden_video"
-         this.video_out.className = "video"
+         // this.video_out.className = "video"
       } else {
-         this.video_out.className = "hidden_video"
+         // this.video_out.className = "hidden_video"
       }
    }
 }
