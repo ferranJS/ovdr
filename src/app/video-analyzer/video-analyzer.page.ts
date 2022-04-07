@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { NavigationExtras, Router } from '@angular/router';
+import { ModalController } from '@ionic/angular';
+import { VideoResultPreviewerPage } from './video-result-previewer/video-result-previewer.page';
 
 @Component({
    selector: 'video-analyzer',
@@ -42,7 +44,7 @@ export class VideoAnalyzerPage {
    mediaRecorder: MediaRecorder
    recording = false
 
-   constructor(private router: Router) { }
+   constructor(private modalControler: ModalController) { }
    
    ionViewWillEnter() {
       this.slider = document.getElementById('slider')
@@ -146,7 +148,7 @@ export class VideoAnalyzerPage {
          // }
          // this.router.navigate(['video-analyzer/result'], params)
          // console.log("params: ", params);
-
+         this.openVideoResultModal(window.URL.createObjectURL(blob))
          // que pase al vídeo resultado !!!
          this.video_in.className = "hidden_video"
          // this.video_out.className = "video"
@@ -159,6 +161,16 @@ export class VideoAnalyzerPage {
       this.mediaRecorder.stop()
       this.mediaRecorder = null
       // this.video_out.srcObject = null
+   }
+
+   async openVideoResultModal(src: string) {
+      const modal = await this.modalControler.create({
+         component: VideoResultPreviewerPage,
+         componentProps: {
+            src
+         }
+      })
+      await modal.present()
    }
 
    prepareCanvas = () => {
