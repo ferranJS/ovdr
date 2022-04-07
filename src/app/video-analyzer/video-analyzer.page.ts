@@ -96,26 +96,12 @@ export class VideoAnalyzerPage {
       this.video_in.muted = true  //hay q hacerlo manual xq en html no va
    }
 
-      // if (navigator.mediaDevices === undefined) {
-      //    // navigator['mediaDevices'] = {}   //dice q es read-only
-      //    navigator.mediaDevices.getUserMedia = function (constraintObj) {
-      //       let getUserMedia = navigator['webkitGetUserMedia'] || navigator['mozGetUserMedia']
-      //       if (!getUserMedia) {
-      //          return Promise.reject(new Error('getUserMedia is not implemented in this browser'))
-      //       }
-      //       return new Promise(function (resolve, reject) {
-      //          getUserMedia.call(navigator, constraintObj, resolve, reject)
-      //       })
-      //    }
-      // }
-
     //////  DOCS  //////
    // https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/MediaRecorder
    // CODECS https://developer.mozilla.org/en-US/docs/Web/Media/Formats/codecs_parameter
    async startRecording() {
       console.log("recording");
       let devices = navigator.mediaDevices
-
       // devices.enumerateDevices().then(devices => {
       //    devices.forEach(device => { console.log(device.kind.toUpperCase(), device.label) })
       // }).catch(err => { console.log(err.name, err.message. err) })
@@ -142,14 +128,9 @@ export class VideoAnalyzerPage {
 
       this.mediaRecorder.onstop = (ev) => {
          const blob = new Blob(chunks, { 'type': 'video/webm' })
-         // this.video_out['src'] = window.URL.createObjectURL(blob)
-         // const params : NavigationExtras = {
-         //    queryParams: {src: window.URL.createObjectURL(blob)}
-         // }
-         // this.router.navigate(['video-analyzer/result'], params)
-         // console.log("params: ", params);
-         this.openVideoResultModal(window.URL.createObjectURL(blob))
+         const src =   window.URL.createObjectURL(blob)
          // que pase al vídeo resultado !!!
+         this.openVideoResultModal(src)
          this.video_in.className = "hidden_video"
          // this.video_out.className = "video"
       }
@@ -163,7 +144,7 @@ export class VideoAnalyzerPage {
       // this.video_out.srcObject = null
    }
 
-   async openVideoResultModal(src: string) {
+   async openVideoResultModal(src:string) {
       const modal = await this.modalControler.create({
          component: VideoResultPreviewerPage,
          componentProps: {
