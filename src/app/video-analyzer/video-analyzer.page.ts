@@ -18,7 +18,6 @@ export class VideoAnalyzerPage {
    colorPicker: any
    mode: string
    video_in: any
-   // video_out: any
    c_out: any
    ctx_out: any
    c_tmp: any
@@ -51,7 +50,6 @@ export class VideoAnalyzerPage {
       this.colorPicker = document.getElementById("colorPicker")
 
       this.video_in = document.getElementById('video_in')
-      // this.video_out = document.getElementById('video_out')
 
       this.c_out = document.getElementById('output-canvas')
       this.ctx_out = this.c_out.getContext('2d')
@@ -115,7 +113,7 @@ export class VideoAnalyzerPage {
       const combinedStream = new MediaStream([
          ...audioStream.getAudioTracks(), ...canvasStream.getVideoTracks()
       ])
-      // this.video_out.srcObject = combinedStream
+      // this.video_out.srcObject = combinedStream // (se va pasando el objeto)
 
       const options = { mimeType: 'video/webm; codecs=vp9' } // codecs=vp9
       this.mediaRecorder = new MediaRecorder(combinedStream, options)
@@ -132,7 +130,6 @@ export class VideoAnalyzerPage {
          // que pase al vídeo resultado !!!
          this.openVideoResultModal(src)
          this.video_in.className = "hidden_video"
-         // this.video_out.className = "video"
       }
       this.mediaRecorder.start()
    }
@@ -141,7 +138,6 @@ export class VideoAnalyzerPage {
       console.log("recording stopped");
       this.mediaRecorder.stop()
       this.mediaRecorder = null
-      // this.video_out.srcObject = null
    }
 
    async openVideoResultModal(src:string) {
@@ -672,9 +668,7 @@ export class VideoAnalyzerPage {
          this.video_in.className = "video"
       } else if (this.video_in.className == "video") {
          this.video_in.className = "hidden_video"
-         // this.video_out.className = "video"
       } else {
-         // this.video_out.className = "hidden_video"
       }
    }
 }

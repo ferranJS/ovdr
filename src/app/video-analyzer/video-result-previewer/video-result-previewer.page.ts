@@ -14,13 +14,11 @@ export class VideoResultPreviewerPage implements OnInit {
   constructor(private modalController: ModalController) { }
 
   ngOnInit() {
-    console.log("hola módulo!")
     this.video_result = document.getElementById('video_result')
     this.video_result['src'] = this.src
-    console.log("this.video_result['src']", this.video_result);
   }
 
-  exitModal() {
+  cancel() {
     this.modalController.dismiss()
   }
 }
