@@ -15,6 +15,7 @@ const routes: Routes = [
     redirectTo: 'video-analyzer',
     pathMatch: 'full'
   },
+
 ];
 
 @NgModule({

@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { ModalController } from '@ionic/angular';
+import { VideoResultPreviewerPage } from './video-result-previewer/video-result-previewer.page';
 
 @Component({
    selector: 'video-analyzer',
@@ -15,7 +17,6 @@ export class VideoAnalyzerPage {
    colorPicker: any
    mode: string
    video_in: any
-   video_out: any
    c_out: any
    ctx_out: any
    c_tmp: any
@@ -41,14 +42,14 @@ export class VideoAnalyzerPage {
    mediaRecorder: MediaRecorder
    recording = false
 
-   constructor() { }
+   @Input() video_url = "assets/video.mp4"
+
+   constructor(private modalController: ModalController) { }
    
    ionViewWillEnter() {
       this.slider = document.getElementById('slider')
       this.colorPicker = document.getElementById("colorPicker")
-
       this.video_in = document.getElementById('video_in')
-      this.video_out = document.getElementById('video_out')
 
       this.c_out = document.getElementById('output-canvas')
       this.ctx_out = this.c_out.getContext('2d')
@@ -60,7 +61,6 @@ export class VideoAnalyzerPage {
       this.ctx_nodes = this.c_nodes.getContext('2d')
 
       this.ctx_out.drawImage(this.c_tmp, 0, 0)
-      // c_tmp.style.zIndex = 99
 
       this.btnPaint = document.getElementById('modePaint')
       this.btnLines = document.getElementById('modeLines')
@@ -90,21 +90,7 @@ export class VideoAnalyzerPage {
          if (this.recording) this.stopRecording()
          else this.startRecording()
       })
-      this.video_in.muted = true  //hay q hacerlo manual xq en html no va
    }
-
-      // if (navigator.mediaDevices === undefined) {
-      //    // navigator['mediaDevices'] = {}   //dice q es read-only
-      //    navigator.mediaDevices.getUserMedia = function (constraintObj) {
-      //       let getUserMedia = navigator['webkitGetUserMedia'] || navigator['mozGetUserMedia']
-      //       if (!getUserMedia) {
-      //          return Promise.reject(new Error('getUserMedia is not implemented in this browser'))
-      //       }
-      //       return new Promise(function (resolve, reject) {
-      //          getUserMedia.call(navigator, constraintObj, resolve, reject)
-      //       })
-      //    }
-      // }
 
     //////  DOCS  //////
    // https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/MediaRecorder
@@ -112,7 +98,6 @@ export class VideoAnalyzerPage {
    async startRecording() {
       console.log("recording");
       let devices = navigator.mediaDevices
-
       // devices.enumerateDevices().then(devices => {
       //    devices.forEach(device => { console.log(device.kind.toUpperCase(), device.label) })
       // }).catch(err => { console.log(err.name, err.message. err) })
@@ -126,7 +111,7 @@ export class VideoAnalyzerPage {
       const combinedStream = new MediaStream([
          ...audioStream.getAudioTracks(), ...canvasStream.getVideoTracks()
       ])
-      // this.video_out.srcObject = combinedStream
+      // this.video_out.srcObject = combinedStream // (se va pasando el objeto)
 
       const options = { mimeType: 'video/webm; codecs=vp9' } // codecs=vp9
       this.mediaRecorder = new MediaRecorder(combinedStream, options)
@@ -139,11 +124,10 @@ export class VideoAnalyzerPage {
 
       this.mediaRecorder.onstop = (ev) => {
          const blob = new Blob(chunks, { 'type': 'video/webm' })
-         this.video_out['src'] = window.URL.createObjectURL(blob)
-
+         const src =   window.URL.createObjectURL(blob)
          // que pase al vídeo resultado !!!
+         this.openVideoResultModal(src)
          this.video_in.className = "hidden_video"
-         this.video_out.className = "video"
       }
       this.mediaRecorder.start()
    }
@@ -152,11 +136,28 @@ export class VideoAnalyzerPage {
       console.log("recording stopped");
       this.mediaRecorder.stop()
       this.mediaRecorder = null
-      this.video_out.srcObject = null
+   }
+
+   async openVideoResultModal(src:string) {
+      const modal = await this.modalController.create({
+         component: VideoResultPreviewerPage,
+         componentProps: { src }
+      })
+      await modal.present()
+
+      modal.onDidDismiss().then(({data: hasCanceled}) => {
+         if (hasCanceled) {
+            this.clearCanvas()
+            this.log = [[]]
+            console.log(this.points, this.log, this.grabedNodes, this.x,this.y, this.x0, this.y0)
+         }
+      })
    }
 
    prepareCanvas = () => {
       this.video_in.removeEventListener('play', this.prepareCanvas)
+      this.video_in.muted = true  //hay q hacerlo manual xq en html no va
+
       this.c_out.setAttribute('width', this.video_in.videoWidth) // *2
       this.c_out.setAttribute('height', this.video_in.videoHeight) // *2
 
@@ -209,11 +210,11 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.beginPath()
       this.getPosition(e)
       this.ctx_tmp.arc(
-         ...this.midpoint(this.x0, this.y0, this.x, this.y), this.radius(this.x0, this.y0, this.x, this.y), 0, 2 * Math.PI
+         ...this.midpoint(this.x0, this.y0, this.x, this.y), 
+         this.radius(this.x0, this.y0, this.x, this.y), 0, 2 * Math.PI
       )
-      this.changeThickness(4)
-      this.ctx_tmp.stroke()
       this.changeThickness(null)
+      this.ctx_tmp.stroke()
    }
 
    startLine = (e) => {
@@ -352,7 +353,7 @@ export class VideoAnalyzerPage {
                   this.last().push({ points: this.points, type: "raya", color: this.colorPicker.value, thickness: this.slider.value })
                else if (this.mode == "circles") {
                   this.midpoint(this.x0, this.y0, this.x, this.y)
-                  this.last().push({ point: this.midpoint(this.x0, this.y0, this.x, this.y), radius: this.radius(this.x0, this.y0, this.x, this.y), type: "circle", color: this.colorPicker.value })
+                  this.last().push({ point: this.midpoint(this.x0, this.y0, this.x, this.y), radius: this.radius(this.x0, this.y0, this.x, this.y), type: "circle", color: this.colorPicker.value, thickness: this.slider.value })
                }
                // else if(mode == "borrar")
                // console.log(log)
@@ -433,7 +434,7 @@ export class VideoAnalyzerPage {
                this.ctx_tmp.beginPath()
                this.ctx_tmp.strokeStyle = path.color
                this.ctx_tmp.arc(...path.point, path.radius, 0, 2 * Math.PI)
-               this.changeThickness(4)
+               this.changeThickness(path.thickness)
                this.ctx_tmp.stroke()
                return
             }
@@ -470,16 +471,17 @@ export class VideoAnalyzerPage {
       let angle = seconAngle - firstAngle
       angle *= 180 / Math.PI
 
-      if (Math.abs(angle) < 15) return  // sirve además para quitar los ángulos complementarios y x lo tanto que no se repita
+      if (Math.abs(angle) < 15) return  // sirve además para quitar los ángulos complementarios y que no se repitan
 
-      let order = angle >= 180 || angle <= 0 && angle >= -180 ? [seconAngle, firstAngle] : [firstAngle, seconAngle]
+      let order = angle >= 180 || angle <= 0 && angle >= -180 ? 
+                    [seconAngle, firstAngle] : [firstAngle, seconAngle]
 
       if (Math.abs(angle) > 180) angle = 360 - Math.abs(angle)
 
       this.ctx_nodes.moveTo(point0.x, point0.y)
       this.ctx_nodes.arc(point0.x, point0.y, 3 * this.nodeRadius + 500 / Math.abs(angle), ...order)
       this.ctx_nodes.closePath()
-      this.ctx_nodes.fillStyle = 'black'
+      this.ctx_nodes.fillStyle = 'black' // black no es black, es para que on se superponga
       this.ctx_nodes.fill()
       // ctx_nodes.stroke()
       this.ctx_nodes.globalCompositeOperation = 'source-over'
@@ -638,7 +640,7 @@ export class VideoAnalyzerPage {
    fillLastLog = () => { // los arrays solo se puede copiar así 
       this.log[this.log.length - 2].forEach((path, i) => {
          if (path.type == "circle") {
-            this.log[this.log.length - 1].push({ point: [...path.point], radius: path.radius, type: path.type, color: path.color })
+            this.log[this.log.length - 1].push({ point: [...path.point], radius: path.radius, type: path.type, color: path.color, thickness: path.thickness })
             return
          }
          this.log[this.log.length - 1].push({ points: [], type: path.type, color: path.color, thickness: path.thickness })
@@ -669,13 +671,11 @@ export class VideoAnalyzerPage {
    }
 
    next = () => {
-      if (this.video_in.className == "hidden_video" && this.video_out.className == "hidden_video") {
+      if (this.video_in.className == "hidden_video") { // && this.video_out.className == "hidden_video"
          this.video_in.className = "video"
       } else if (this.video_in.className == "video") {
          this.video_in.className = "hidden_video"
-         this.video_out.className = "video"
       } else {
-         this.video_out.className = "hidden_video"
       }
    }
 }
