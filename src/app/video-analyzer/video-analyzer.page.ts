@@ -206,7 +206,7 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.arc(
          ...this.midpoint(this.x0, this.y0, this.x, this.y), this.radius(this.x0, this.y0, this.x, this.y), 0, 2 * Math.PI
       )
-      this.changeThickness(4)
+      this.changeThickness(null)
       this.ctx_tmp.stroke()
       this.changeThickness(null)
    }
@@ -347,7 +347,7 @@ export class VideoAnalyzerPage {
                   this.last().push({ points: this.points, type: "raya", color: this.colorPicker.value, thickness: this.slider.value })
                else if (this.mode == "circles") {
                   this.midpoint(this.x0, this.y0, this.x, this.y)
-                  this.last().push({ point: this.midpoint(this.x0, this.y0, this.x, this.y), radius: this.radius(this.x0, this.y0, this.x, this.y), type: "circle", color: this.colorPicker.value })
+                  this.last().push({ point: this.midpoint(this.x0, this.y0, this.x, this.y), radius: this.radius(this.x0, this.y0, this.x, this.y), type: "circle", color: this.colorPicker.value, thickness: this.slider.value })
                }
                // else if(mode == "borrar")
                // console.log(log)
@@ -428,7 +428,7 @@ export class VideoAnalyzerPage {
                this.ctx_tmp.beginPath()
                this.ctx_tmp.strokeStyle = path.color
                this.ctx_tmp.arc(...path.point, path.radius, 0, 2 * Math.PI)
-               this.changeThickness(4)
+               this.changeThickness(path.thickness)
                this.ctx_tmp.stroke()
                return
             }
@@ -633,7 +633,7 @@ export class VideoAnalyzerPage {
    fillLastLog = () => { // los arrays solo se puede copiar así 
       this.log[this.log.length - 2].forEach((path, i) => {
          if (path.type == "circle") {
-            this.log[this.log.length - 1].push({ point: [...path.point], radius: path.radius, type: path.type, color: path.color })
+            this.log[this.log.length - 1].push({ point: [...path.point], radius: path.radius, type: path.type, color: path.color, thickness: path.thickness })
             return
          }
          this.log[this.log.length - 1].push({ points: [], type: path.type, color: path.color, thickness: path.thickness })
