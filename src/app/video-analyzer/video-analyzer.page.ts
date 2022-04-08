@@ -62,7 +62,6 @@ export class VideoAnalyzerPage {
       this.ctx_nodes = this.c_nodes.getContext('2d')
 
       this.ctx_out.drawImage(this.c_tmp, 0, 0)
-      // c_tmp.style.zIndex = 99
 
       this.btnPaint = document.getElementById('modePaint')
       this.btnLines = document.getElementById('modeLines')
@@ -473,16 +472,17 @@ export class VideoAnalyzerPage {
       let angle = seconAngle - firstAngle
       angle *= 180 / Math.PI
 
-      if (Math.abs(angle) < 15) return  // sirve además para quitar los ángulos complementarios y x lo tanto que no se repita
+      if (Math.abs(angle) < 15) return  // sirve además para quitar los ángulos complementarios y que no se repitan
 
-      let order = angle >= 180 || angle <= 0 && angle >= -180 ? [seconAngle, firstAngle] : [firstAngle, seconAngle]
+      let order = angle >= 180 || angle <= 0 && angle >= -180 ? 
+                    [seconAngle, firstAngle] : [firstAngle, seconAngle]
 
       if (Math.abs(angle) > 180) angle = 360 - Math.abs(angle)
 
       this.ctx_nodes.moveTo(point0.x, point0.y)
       this.ctx_nodes.arc(point0.x, point0.y, 3 * this.nodeRadius + 500 / Math.abs(angle), ...order)
       this.ctx_nodes.closePath()
-      this.ctx_nodes.fillStyle = 'black'
+      this.ctx_nodes.fillStyle = 'black' // black no es black, es para que on se superponga
       this.ctx_nodes.fill()
       // ctx_nodes.stroke()
       this.ctx_nodes.globalCompositeOperation = 'source-over'

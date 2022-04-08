@@ -11,4 +11,10 @@
 
 <ion-content>
   <video id="video_result" class="video" src="assets/video.mp4" controls autoplay muted loop></video>
+
+  <div id="tweeks">
+    <button id="pauseBtn" (click)="downloadVideo()">
+      <i [class]="video_in?.paused ? 'fa fa-play' : 'fa fa-arrow-down'"></i>
+    </button>
+  </div>
 </ion-content>
