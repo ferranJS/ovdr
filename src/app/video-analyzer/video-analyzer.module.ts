@@ -7,11 +7,10 @@ import { IonicModule } from '@ionic/angular';
 
 import { VideoAnalyzerPage } from './video-analyzer.page';
 import { VideoResultPreviewerPageModule } from './video-result-previewer/video-result-previewer.module';
-import { VideoResultPreviewerPage } from './video-result-previewer/video-result-previewer.page';
 import { VideoAnalyzerPageRoutingModule } from './video-analyzer-routing.module';
 
 @NgModule({
-  entryComponents: [ VideoResultPreviewerPage ],
+  // entryComponents: [ VideoResultPreviewerPage ],
   imports: [
     CommonModule,
     FormsModule,

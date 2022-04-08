@@ -50,6 +50,16 @@ i {
     width: 100vw; */
 }
 
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+ion-content {
+    --overflow: hidden;
+}
+
 #media-container {
     display: flex;
     /* height: 100vh;

@@ -19,6 +19,6 @@ export class VideoResultPreviewerPage implements OnInit {
   }
 
   cancel() {
-    this.modalController.dismiss()
+    this.modalController.dismiss(true)
   }
 }

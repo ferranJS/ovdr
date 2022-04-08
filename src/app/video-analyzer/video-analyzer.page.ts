@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { NavigationExtras, Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { VideoResultPreviewerPage } from './video-result-previewer/video-result-previewer.page';
@@ -43,12 +43,13 @@ export class VideoAnalyzerPage {
    mediaRecorder: MediaRecorder
    recording = false
 
-   constructor(private modalControler: ModalController) { }
+   @Input() video_url = "assets/video.mp4"
+
+   constructor(private modalController: ModalController) { }
    
    ionViewWillEnter() {
       this.slider = document.getElementById('slider')
       this.colorPicker = document.getElementById("colorPicker")
-
       this.video_in = document.getElementById('video_in')
 
       this.c_out = document.getElementById('output-canvas')
@@ -91,7 +92,6 @@ export class VideoAnalyzerPage {
          if (this.recording) this.stopRecording()
          else this.startRecording()
       })
-      this.video_in.muted = true  //hay q hacerlo manual xq en html no va
    }
 
     //////  DOCS  //////
@@ -141,17 +141,25 @@ export class VideoAnalyzerPage {
    }
 
    async openVideoResultModal(src:string) {
-      const modal = await this.modalControler.create({
+      const modal = await this.modalController.create({
          component: VideoResultPreviewerPage,
-         componentProps: {
-            src
-         }
+         componentProps: { src }
       })
       await modal.present()
+
+      modal.onDidDismiss().then(({data: hasCanceled}) => {
+         if (hasCanceled) {
+            this.clearCanvas()
+            this.log = [[]]
+            console.log(this.points, this.log, this.grabedNodes, this.x,this.y, this.x0, this.y0)
+         }
+      })
    }
 
    prepareCanvas = () => {
       this.video_in.removeEventListener('play', this.prepareCanvas)
+      this.video_in.muted = true  //hay q hacerlo manual xq en html no va
+
       this.c_out.setAttribute('width', this.video_in.videoWidth) // *2
       this.c_out.setAttribute('height', this.video_in.videoHeight) // *2
 
@@ -204,11 +212,11 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.beginPath()
       this.getPosition(e)
       this.ctx_tmp.arc(
-         ...this.midpoint(this.x0, this.y0, this.x, this.y), this.radius(this.x0, this.y0, this.x, this.y), 0, 2 * Math.PI
+         ...this.midpoint(this.x0, this.y0, this.x, this.y), 
+         this.radius(this.x0, this.y0, this.x, this.y), 0, 2 * Math.PI
       )
       this.changeThickness(null)
       this.ctx_tmp.stroke()
-      this.changeThickness(null)
    }
 
    startLine = (e) => {
