@@ -41,7 +41,7 @@ export class VideoResultPreviewerPage implements OnInit {
         const base64 = await this.blobToBase64(event.body) as string
 
         const saved = await Filesystem.writeFile({
-          path: name,
+          path: name, //'videoRes.mp4', ??
           data: base64,
           directory: Directory.Documents
         })
