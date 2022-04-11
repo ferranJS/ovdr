@@ -112,8 +112,22 @@ export class VideoAnalyzerPage {
          ...audioStream.getAudioTracks(), ...canvasStream.getVideoTracks()
       ])
       // this.video_out.srcObject = combinedStream // (se va pasando el objeto)
-
-      const options = { mimeType: 'video/webm; codecs=vp9' } // codecs=vp9
+      // video/webm
+      // video/webm;codecs=vp8
+      // video/webm;codecs=vp9
+      // video/webm;codecs=vp8.0
+      // video/webm;codecs=vp9.0
+      // video/webm;codecs=h264
+      // video/webm;codecs=H264
+      // video/webm;codecs=avc1
+      // video/webm;codecs=vp8,opus
+      // video/WEBM;codecs=VP8,OPUS
+      // video/webm;codecs=vp9,opus
+      // video/webm;codecs=vp8,vp9,opus
+      // video/webm;codecs=h264,opus
+      // video/webm;codecs=h264,vp9,opus
+      // video/x-matroska;codecs=avc1
+      const options = { mimeType: 'video/webm' } // codecs=vp9
       this.mediaRecorder = new MediaRecorder(combinedStream, options)
       let chunks = []
 
@@ -121,7 +135,8 @@ export class VideoAnalyzerPage {
          if(ev.data && ev.data.size > 0) 
             chunks.push(ev.data)
       }
-
+      // https://gist.github.com/AVGP/4c2ce4ab3c67760a0f30a9d54544a060
+      // https://www.npmjs.com/package/webm-to-mp4
       this.mediaRecorder.onstop = (ev) => {
          const blob = new Blob(chunks, { 'type': 'video/webm' })
          const src =   window.URL.createObjectURL(blob)
