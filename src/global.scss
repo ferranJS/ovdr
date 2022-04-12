@@ -106,7 +106,7 @@ ion-content {
     pointer-events: none;
 }
 // los botones de modo , el botón de grabar
-button, input[type="radio"]+label, input[type="checkbox"] + label, #timeline{
+button, input[type="radio"]+label, input[type="checkbox"] + label, input[type="file"] + label, #timeline{
     margin: 10px;
     align-items: center;
     appearance: none;
@@ -149,12 +149,16 @@ button:active {
 }
 
 //que no aparezcan como tal (se activan con los divs)
-input[type="radio"], input[type="checkbox"] {
-    -webkit-appearance: none;
+input[type="radio"], input[type="checkbox"], input[type="file"] { 
+    -webkit-appearance: none
+}
+
+input[type="file"] {
+    visibility:hidden
 }
 
 //modos y grabar checked
-input[type="radio"]:checked + label, input[type="checkbox"]:checked + label  {
+input[type="radio"]:checked + label, input[type="checkbox"]:checked + label, input[type="file"]:checked + label  {
     background-color: #666677;
     color: #ffffff;
     box-shadow: 0 15px 45px rgba(24, 249, 140, 0.034);

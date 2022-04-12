@@ -1,5 +1,4 @@
-import { Component, Input } from '@angular/core';
-import { NavigationExtras, Router } from '@angular/router';
+import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { VideoResultPreviewerPage } from './video-result-previewer/video-result-previewer.page';
 
@@ -44,6 +43,7 @@ export class VideoAnalyzerPage {
    recording = false
 
    @Input() video_url = "assets/video.mp4"
+   @ViewChild('fileInput', { static: false }) fileInput: ElementRef;
 
    constructor(private modalController: ModalController) { }
    
@@ -113,7 +113,21 @@ export class VideoAnalyzerPage {
          ...audioStream.getAudioTracks(), ...canvasStream.getVideoTracks()
       ])
       // this.video_out.srcObject = combinedStream // (se va pasando el objeto)
-
+      // video/webm
+      // video/webm;codecs=vp8
+      // video/webm;codecs=vp9
+      // video/webm;codecs=vp8.0
+      // video/webm;codecs=vp9.0
+      // video/webm;codecs=h264
+      // video/webm;codecs=H264
+      // video/webm;codecs=avc1
+      // video/webm;codecs=vp8,opus
+      // video/WEBM;codecs=VP8,OPUS
+      // video/webm;codecs=vp9,opus
+      // video/webm;codecs=vp8,vp9,opus
+      // video/webm;codecs=h264,opus
+      // video/webm;codecs=h264,vp9,opus
+      // video/x-matroska;codecs=avc1
       const options = { mimeType: 'video/webm; codecs=vp9' } // codecs=vp9
       this.mediaRecorder = new MediaRecorder(combinedStream, options)
       let chunks = []
@@ -122,9 +136,11 @@ export class VideoAnalyzerPage {
          if(ev.data && ev.data.size > 0) 
             chunks.push(ev.data)
       }
-
+      // https://gist.github.com/AVGP/4c2ce4ab3c67760a0f30a9d54544a060
+      // https://www.npmjs.com/package/webm-to-mp4
+      // ffmpeg -i input.webm -preset superfast output.mp4 !!! seguramente lo mejor
       this.mediaRecorder.onstop = (ev) => {
-         const blob = new Blob(chunks, { 'type': 'video/webm' })
+         const blob = new Blob(chunks, { 'type': 'video/webm; codecs=vp9' })
          const src =   window.URL.createObjectURL(blob)
          // que pase al vídeo resultado !!!
          this.openVideoResultModal(src)
@@ -671,12 +687,16 @@ export class VideoAnalyzerPage {
       this.log.push([])
    }
 
-   next = () => {
-      if (this.video_in.className == "hidden_video") { // && this.video_out.className == "hidden_video"
-         this.video_in.className = "video"
-      } else if (this.video_in.className == "video") {
-         this.video_in.className = "hidden_video"
-      } else {
-      }
+   uploadFile = (e) => {
+      console.log("e: ", e);
+
    }
+   // next = () => {
+   //    if (this.video_in.className == "hidden_video") { // && this.video_out.className == "hidden_video"
+   //       this.video_in.className = "video"
+   //    } else if (this.video_in.className == "video") {
+   //       this.video_in.className = "hidden_video"
+   //    } else {
+   //    }
+   // }
 }
