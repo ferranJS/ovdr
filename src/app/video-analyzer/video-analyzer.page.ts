@@ -1,4 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { NavigationExtras, Router } from '@angular/router';
+import { ModalController } from '@ionic/angular';
+import { VideoResultPreviewerPage } from './video-result-previewer/video-result-previewer.page';
 
 @Component({
    selector: 'video-analyzer',
@@ -6,52 +9,48 @@ import { Component, OnInit } from '@angular/core';
    styleUrls: ['./video-analyzer.page.scss'],
 })
 export class VideoAnalyzerPage {
-   private btnPaint: HTMLElement
-   private btnLines: HTMLElement
-   private btnGrab: HTMLElement
-   private btnErase: HTMLElement
-   private slider: any
-   private colorPicker: any
-   public mode: string
-   private video_in: any
-   private video_out: HTMLElement
-   private c_out: any
-   private ctx_out: any
-   private c_tmp: any
-   private ctx_tmp: any
-   private c_nodes: any
-   private ctx_nodes: any
-   private canvasContainer: HTMLElement
+   btnPaint: HTMLElement
+   btnLines: HTMLElement
+   btnGrab: HTMLElement
+   btnErase: HTMLElement
+   btnRecord: HTMLElement
+   slider: any
+   colorPicker: any
+   mode: string
+   video_in: any
+   c_out: any
+   ctx_out: any
+   c_tmp: any
+   ctx_tmp: any
+   c_nodes: any
+   ctx_nodes: any
+   canvasContainer: HTMLElement
 
-   private points: any = []
-   private x: number  // x e y tras getPosition
-   private y: number
-   private x0: number // x e y inicial (asignados una vez x línea/círculo)
-   private y0: number
-   private clicking: boolean = false
-   private hasDragged = false
-   private recording = false
+   points: any = []
+   x: number  // x e y tras getPosition
+   y: number
+   x0: number // x e y inicial (asignados una vez x línea/círculo)
+   y0: number
+   
+   clicking: boolean = false
+   hasDragged = false
 
-   private log = [[]] // historial de dibujado
+   log = [[]] // historial de dibujado
 
-   private grabedNodes = []
-   private nodeRadius = 11
+   grabedNodes = []
+   nodeRadius = 11
 
-   // access microphone 
-   private constraintObj = {
-      audio: true,
-      video: false
-   }
+   mediaRecorder: MediaRecorder
+   recording = false
 
-   constructor() { }
+   @Input() video_url = "assets/video.mp4"
 
+   constructor(private modalController: ModalController) { }
    
    ionViewWillEnter() {
       this.slider = document.getElementById('slider')
       this.colorPicker = document.getElementById("colorPicker")
-
       this.video_in = document.getElementById('video_in')
-      this.video_out = document.getElementById('video_out')
 
       this.c_out = document.getElementById('output-canvas')
       this.ctx_out = this.c_out.getContext('2d')
@@ -63,12 +62,12 @@ export class VideoAnalyzerPage {
       this.ctx_nodes = this.c_nodes.getContext('2d')
 
       this.ctx_out.drawImage(this.c_tmp, 0, 0)
-      // c_tmp.style.zIndex = 99
 
       this.btnPaint = document.getElementById('modePaint')
       this.btnLines = document.getElementById('modeLines')
       this.btnGrab = document.getElementById('modeGrab')
       this.btnErase = document.getElementById('modeErase')
+      this.btnRecord = document.getElementById('videoRecord')
 
       this.canvasContainer.addEventListener('touchstart', this.startAction)
       this.canvasContainer.addEventListener('touchleave', this.stopAction)
@@ -86,63 +85,80 @@ export class VideoAnalyzerPage {
 
       // velocidad del video
       this.video_in.playbackRate = 1
-      this.initRecorder()
+
       this.video_in.addEventListener('play', this.prepareCanvas)
+      this.btnRecord.addEventListener('click', () => {
+         if (this.recording) this.stopRecording()
+         else this.startRecording()
+      })
    }
 
-   private initRecorder = () => {
-      if (navigator.mediaDevices === undefined) {
-         // navigator['mediaDevices'] = {}   //dice q es read-only
-         navigator.mediaDevices.getUserMedia = function (constraintObj) {
-            let getUserMedia = navigator['webkitGetUserMedia'] || navigator['mozGetUserMedia']
-            if (!getUserMedia) {
-               return Promise.reject(new Error('getUserMedia is not implemented in this browser'))
-            }
-            return new Promise(function (resolve, reject) {
-               getUserMedia.call(navigator, constraintObj, resolve, reject)
-            })
-         }
-      } else {
-         navigator.mediaDevices.enumerateDevices().then(devices => {
-            devices.forEach(device => { console.log(device.kind.toUpperCase(), device.label) })
-         })
-            .catch(err => { console.log(err.name, err.message) })
+    //////  DOCS  //////
+   // https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/MediaRecorder
+   // CODECS https://developer.mozilla.org/en-US/docs/Web/Media/Formats/codecs_parameter
+   async startRecording() {
+      console.log("recording");
+      let devices = navigator.mediaDevices
+      // devices.enumerateDevices().then(devices => {
+      //    devices.forEach(device => { console.log(device.kind.toUpperCase(), device.label) })
+      // }).catch(err => { console.log(err.name, err.message. err) })
+      // console.log(MediaRecorder.isTypeSupported('video/webm;codecs=h264'))
+      
+      const audioStream = await devices.getUserMedia({
+         audio: true,
+         video: false
+      })
+      const canvasStream = this.c_out.captureStream(40 /*fps*/)
+      const combinedStream = new MediaStream([
+         ...audioStream.getAudioTracks(), ...canvasStream.getVideoTracks()
+      ])
+      // this.video_out.srcObject = combinedStream // (se va pasando el objeto)
+
+      const options = { mimeType: 'video/webm; codecs=vp9' } // codecs=vp9
+      this.mediaRecorder = new MediaRecorder(combinedStream, options)
+      let chunks = []
+
+      this.mediaRecorder.ondataavailable = (ev: any) => {
+         if(ev.data && ev.data.size > 0) 
+            chunks.push(ev.data)
       }
-      navigator.mediaDevices.getUserMedia(this.constraintObj)
-         .then((audioStreamObj) => {
-            let videoRecordBtn = document.getElementById('videoRecord')
-            let vidSave = document.getElementById('video_out')
-            let canvasStreamObj = this.c_out.captureStream(40 /*fps*/)
-            let combinedStreamObj = new MediaStream([...audioStreamObj.getAudioTracks(), ...canvasStreamObj.getVideoTracks()])
-            let mediaRecorder = new MediaRecorder(combinedStreamObj)
-            let chunks = []
 
-            videoRecordBtn.addEventListener('click', () => {
-               if (this.recording) {
-                  mediaRecorder.stop()
-               } else {
-                  mediaRecorder.start()
-               }
-               this.recording = !this.recording
-               console.log(mediaRecorder.state)
-            })
-            mediaRecorder.ondataavailable = function (ev) {
-               chunks.push(ev.data)
-            }
-            mediaRecorder.onstop = (ev) => {
-               let blob = new Blob(chunks, { 'type': 'video/mp4' })
-               chunks = []
-               let videoURL = window.URL.createObjectURL(blob)
-               vidSave['src'] = videoURL
-
-               // que pase al vídeo resultado !!!
-               this.video_in.className = "hidden_video"
-               this.video_out.className = "video"
-            }
-         })
+      this.mediaRecorder.onstop = (ev) => {
+         const blob = new Blob(chunks, { 'type': 'video/webm' })
+         const src =   window.URL.createObjectURL(blob)
+         // que pase al vídeo resultado !!!
+         this.openVideoResultModal(src)
+         this.video_in.className = "hidden_video"
+      }
+      this.mediaRecorder.start()
    }
 
-   private prepareCanvas = () => {
+   stopRecording() {
+      console.log("recording stopped");
+      this.mediaRecorder.stop()
+      this.mediaRecorder = null
+   }
+
+   async openVideoResultModal(src:string) {
+      const modal = await this.modalController.create({
+         component: VideoResultPreviewerPage,
+         componentProps: { src }
+      })
+      await modal.present()
+
+      modal.onDidDismiss().then(({data: hasCanceled}) => {
+         if (hasCanceled) {
+            this.clearCanvas()
+            this.log = [[]]
+            console.log(this.points, this.log, this.grabedNodes, this.x,this.y, this.x0, this.y0)
+         }
+      })
+   }
+
+   prepareCanvas = () => {
+      this.video_in.removeEventListener('play', this.prepareCanvas)
+      this.video_in.muted = true  //hay q hacerlo manual xq en html no va
+
       this.c_out.setAttribute('width', this.video_in.videoWidth) // *2
       this.c_out.setAttribute('height', this.video_in.videoHeight) // *2
 
@@ -159,14 +175,13 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.strokeStyle = this.colorPicker.value
       this.ctx_tmp.lineCap = 'round'
       this.ctx_nodes.lineWidth = this.slider.value
-
       this.btnLines.click()  // botón presionado inicial!
 
       // video_in.removeEventListener('play', prepareCanvas)
       this.computeFrame()
    }
 
-   private computeFrame = () => {
+   computeFrame = () => {
       // if (video_in.paused || video_in.ended) { return  }
 
       this.ctx_out.drawImage(this.video_in, 0, 0, this.video_in.videoWidth, this.video_in.videoHeight)
@@ -185,39 +200,42 @@ export class VideoAnalyzerPage {
       setTimeout(this.computeFrame, 0)
    }
 
-   private startCircle = (e) => {
+   startCircle = (e) => {
       this.getPosition(e)
       this.x0 = this.x
       this.y0 = this.y
    }
 
-   private previewCircle = (e: any) => {
+   previewCircle = (e: any) => {
       this.drawPaths()
       this.ctx_tmp.beginPath()
       this.getPosition(e)
-      this.ctx_tmp.arc(...this.midpoint(this.x0, this.y0, this.x, this.y), this.radius(this.x0, this.y0, this.x, this.y), 0, 2 * Math.PI)
-      this.changeThickness(4)
-      this.ctx_tmp.stroke()
+      this.ctx_tmp.arc(
+         ...this.midpoint(this.x0, this.y0, this.x, this.y), 
+         this.radius(this.x0, this.y0, this.x, this.y), 0, 2 * Math.PI
+      )
       this.changeThickness(null)
+      this.ctx_tmp.stroke()
    }
 
-   private startLine = (e) => {
+   startLine = (e) => {
       this.getPosition(e)
-      if (!this.last().some(path => {  //requiere array no modif
-         if (path.type != "line") return
-         if (this.overNode(path.points[0])) {
-            [this.x0, this.y0] = [path.points[0].x, path.points[0].y]; return true
-         }
-         if (this.overNode(path.points[1])) {
-            [this.x0, this.y0] = [path.points[1].x, path.points[1].y]; return true
-         }
-      })) {
+      if(!this.last().some(path => {  //requiere array no modif
+            if (path.type != "line") return
+            if (this.overNode(path.points[0])) {
+               [this.x0, this.y0] = [path.points[0].x, path.points[0].y]; return true
+            }
+            if (this.overNode(path.points[1])) {
+               [this.x0, this.y0] = [path.points[1].x, path.points[1].y]; return true
+            }
+         })
+      ) {
          [this.x0, this.y0] = [this.x, this.y]
       }
       this.draw1Node(this.x0, this.y0, this.colorPicker.value)
    }
 
-   private previewLine = (e: any) => {
+   previewLine = (e: any) => {
       this.drawPaths()
       let p_x: any, p_y: any
       this.last().some(path => {
@@ -238,7 +256,7 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.stroke()
    }
 
-   private grabNode = (e) => {
+   grabNode = (e) => {
       this.getPosition(e)
       this.last().some((path, i) => {
          if (path.type != "line") return //no interactuar consigo misma
@@ -255,7 +273,7 @@ export class VideoAnalyzerPage {
       })
    }
 
-   private moveNode = (e: any) => {
+   moveNode = (e: any) => {
       this.getPosition(e)
       if (!this.last().some((path, i) => {
          if (path.type != "line" || this.grabedNodes.some(node => node.i == i)) return //no interactuar consigo misma
@@ -278,7 +296,7 @@ export class VideoAnalyzerPage {
       this.drawNodes()
    }
 
-   private startAction = (e: any) => {
+   startAction = (e: any) => {
 
       if (this.last().length > 17 && this.mode != "grab") return
       // var before = performance.now() 
@@ -299,7 +317,7 @@ export class VideoAnalyzerPage {
       // console.log((performance.now()-before)/3)
    }
 
-   private stopAction = (e: any) => {
+   stopAction = (e: any) => {
       try {
          if (this.clicking) {
             if (this.hasDragged) {
@@ -336,7 +354,7 @@ export class VideoAnalyzerPage {
                   this.last().push({ points: this.points, type: "raya", color: this.colorPicker.value, thickness: this.slider.value })
                else if (this.mode == "circles") {
                   this.midpoint(this.x0, this.y0, this.x, this.y)
-                  this.last().push({ point: this.midpoint(this.x0, this.y0, this.x, this.y), radius: this.radius(this.x0, this.y0, this.x, this.y), type: "circle", color: this.colorPicker.value })
+                  this.last().push({ point: this.midpoint(this.x0, this.y0, this.x, this.y), radius: this.radius(this.x0, this.y0, this.x, this.y), type: "circle", color: this.colorPicker.value, thickness: this.slider.value })
                }
                // else if(mode == "borrar")
                // console.log(log)
@@ -352,7 +370,7 @@ export class VideoAnalyzerPage {
    }
 
    // https://stackoverflow.com/questions/53960651/how-to-make-an-undo-function-in-canvas/53961111
-   private sketch = (e: any) => {
+   sketch = (e: any) => {
       if (!this.clicking) return
       this.hasDragged = true
       if (this.mode == "paint") this.paint(e)
@@ -363,7 +381,7 @@ export class VideoAnalyzerPage {
          if (this.grabedNodes.length) this.moveNode(e)
    }
 
-   private paint = (e: any) => {
+   paint = (e: any) => {
       [this.x0, this.y0] = [this.x, this.y]
       this.getPosition(e)
       // saving the points in the points array
@@ -409,7 +427,7 @@ export class VideoAnalyzerPage {
    //     drawNodes()
    // }
 
-   private drawPaths = () => {
+   drawPaths = () => {
       this.ctx_tmp.clearRect(0, 0, this.c_tmp.width, this.c_tmp.height)
       try {
          this.last().forEach(path => {
@@ -417,7 +435,7 @@ export class VideoAnalyzerPage {
                this.ctx_tmp.beginPath()
                this.ctx_tmp.strokeStyle = path.color
                this.ctx_tmp.arc(...path.point, path.radius, 0, 2 * Math.PI)
-               this.changeThickness(4)
+               this.changeThickness(path.thickness)
                this.ctx_tmp.stroke()
                return
             }
@@ -436,16 +454,16 @@ export class VideoAnalyzerPage {
       this.changeThickness(null)
    }
    
-   private midpoint = (x1: any, y1: any, x2: any, y2: any) => {
+   midpoint = (x1: any, y1: any, x2: any, y2: any) => {
       return [(x1 + x2) / 2, (y1 + y2) / 2]
    }
 
-   private radius = (x1: number, y1: number, x2: number, y2: number) => {
+   radius = (x1: number, y1: number, x2: number, y2: number) => {
       return Math.hypot(x2 - x1, y2 - y1) / 2
    }
 
    // https://stackoverflow.com/questions/56147279/how-to-find-angle-between-two-vectors-on-canvas
-   private draw1Angle = (point0: { y: number; x: number; }, point1: { y: number; x: number; }, point2: { y: number; x: number; }, color: string) => { //, i, i_, j, j_
+   draw1Angle = (point0: { y: number; x: number; }, point1: { y: number; x: number; }, point2: { y: number; x: number; }, color: string) => { //, i, i_, j, j_
       this.ctx_nodes.beginPath()
       this.ctx_nodes.globalCompositeOperation = 'destination-out'
       let firstAngle = Math.atan2(point1.y - point0.y, point1.x - point0.x)
@@ -454,16 +472,17 @@ export class VideoAnalyzerPage {
       let angle = seconAngle - firstAngle
       angle *= 180 / Math.PI
 
-      if (Math.abs(angle) < 15) return  // sirve además para quitar los ángulos complementarios y x lo tanto que no se repita
+      if (Math.abs(angle) < 15) return  // sirve además para quitar los ángulos complementarios y que no se repitan
 
-      let order = angle >= 180 || angle <= 0 && angle >= -180 ? [seconAngle, firstAngle] : [firstAngle, seconAngle]
+      let order = angle >= 180 || angle <= 0 && angle >= -180 ? 
+                    [seconAngle, firstAngle] : [firstAngle, seconAngle]
 
       if (Math.abs(angle) > 180) angle = 360 - Math.abs(angle)
 
       this.ctx_nodes.moveTo(point0.x, point0.y)
       this.ctx_nodes.arc(point0.x, point0.y, 3 * this.nodeRadius + 500 / Math.abs(angle), ...order)
       this.ctx_nodes.closePath()
-      this.ctx_nodes.fillStyle = 'black'
+      this.ctx_nodes.fillStyle = 'black' // black no es black, es para que on se superponga
       this.ctx_nodes.fill()
       // ctx_nodes.stroke()
       this.ctx_nodes.globalCompositeOperation = 'source-over'
@@ -490,13 +509,13 @@ export class VideoAnalyzerPage {
    }
 
    // https://stackoverflow.com/questions/14829621/formula-to-find-points-on-the-circumference-of-a-circle-given-the-center-of-the
-   private calcularPosTexto = (x0: number, y0: number, alpha: number, r: number) => {
+   calcularPosTexto = (x0: number, y0: number, alpha: number, r: number) => {
       let x = Math.cos(alpha) * r + x0
       let y = Math.sin(alpha) * r + y0
       return [x, y]
    }
 
-   private draw1Node = (x: any, y: any, color: string) => {
+   draw1Node = (x: any, y: any, color: string) => {
       this.ctx_nodes.beginPath()
       this.ctx_nodes.globalCompositeOperation = 'destination-out'
       this.ctx_nodes.arc(x, y, this.nodeRadius, 0, 2 * Math.PI)
@@ -507,7 +526,8 @@ export class VideoAnalyzerPage {
       this.ctx_nodes.fill()
    }
 
-   private drawNodes = () => {
+   drawNodes = () => {
+      // setTimeout(() => {
       this.ctx_nodes.clearRect(0, 0, this.c_nodes.width, this.c_nodes.height)
       let pairs = []
       this.last().some((path, i) => {
@@ -538,9 +558,10 @@ export class VideoAnalyzerPage {
             }
          })
       })
+      // }, 0)
    }
 
-   private getPosition = (e: { type: string; originalEvent: any; clientX: number; clientY: number; }) => {
+   getPosition = (e: { type: string; originalEvent: any; clientX: number; clientY: number; }) => {
       var rect = this.c_tmp.getBoundingClientRect()
       if (e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel') {
          var evt = (typeof e.originalEvent === 'undefined') ? e : e.originalEvent
@@ -554,14 +575,14 @@ export class VideoAnalyzerPage {
       }
    }
 
-   private overNode = (point: { x: number; y: number; }, holgura = 20) => {
+   overNode = (point: { x: number; y: number; }, holgura = 20) => {
       let xDiff = point.x - this.x
       let yDiff = point.y - this.y
 
       return Math.sqrt(xDiff * xDiff + yDiff * yDiff) < this.nodeRadius + holgura
    }
 
-   private changeColor = () => {
+   changeColor = () => {
       let color = "#"
       if (this.colorPicker.value.substr(1, 2) < 7) color += "11"
       else color += this.colorPicker.value.substr(1, 2)
@@ -574,9 +595,9 @@ export class VideoAnalyzerPage {
       this.colorPicker.value = color
    }
 
-   private changeThickness = (thickness: number) => { this.ctx_tmp.lineWidth = thickness || this.slider.value }
+   changeThickness = (thickness: number) => { this.ctx_tmp.lineWidth = thickness || this.slider.value }
 
-   private changeLineColor = () => {
+   changeLineColor = () => {
       let color = "#"
       let r = (parseInt(parseInt(this.colorPicker.value.substr(1, 2), 16).toString(10), 10))
       let g = (parseInt(parseInt(this.colorPicker.value.substr(3, 2), 16).toString(10), 10))
@@ -606,19 +627,21 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.strokeStyle = color
    }
 
-   public selectMode = (clickedMode: any) => {
+   selectMode = (clickedMode: string) => {
       if (this.mode == clickedMode) this.btnGrab.click()
       else this.mode = clickedMode
-      if (this.mode == "paint" || this.mode == "circle") this.ctx_nodes.clearRect(0, 0, this.c_nodes.width, this.c_nodes.height)
+      if (this.mode == "paint" || this.mode == "circle") 
+         this.ctx_nodes.clearRect(0, 0, this.c_nodes.width, this.c_nodes.height)
       else this.drawNodes()
    }
 
-   private last = () => { return this.log[this.log.length - 1] || [] }
+   // retorna la referencia a la última versión(log) del canvas
+   last = () => { return this.log[this.log.length - 1] || [] }
 
-   private fillLastLog = () => { //los arrays solo se puede copiar así 
+   fillLastLog = () => { // los arrays solo se puede copiar así 
       this.log[this.log.length - 2].forEach((path, i) => {
          if (path.type == "circle") {
-            this.log[this.log.length - 1].push({ point: [...path.point], radius: path.radius, type: path.type, color: path.color })
+            this.log[this.log.length - 1].push({ point: [...path.point], radius: path.radius, type: path.type, color: path.color, thickness: path.thickness })
             return
          }
          this.log[this.log.length - 1].push({ points: [], type: path.type, color: path.color, thickness: path.thickness })
@@ -628,12 +651,12 @@ export class VideoAnalyzerPage {
       })
    }
 
-   private shortenLog = () => {
+   shortenLog = () => {
       if (this.log.length > 30)
          this.log.splice(0, 3)
    }
 
-   public undo = () => {
+   undo = () => {
       if (this.log.length == 1) return
       this.log.pop()
       this.drawPaths()
@@ -641,21 +664,19 @@ export class VideoAnalyzerPage {
       else this.drawNodes()
    }
 
-   public clearCanvas = () => {
+   clearCanvas = () => {
       if (!this.last().length) return
       this.ctx_nodes.clearRect(0, 0, this.c_nodes.width, this.c_nodes.height)
       this.ctx_tmp.clearRect(0, 0, this.c_tmp.width, this.c_tmp.height)
       this.log.push([])
    }
 
-   public next = () => {
-      if (this.video_in.className == "hidden_video" && this.video_out.className == "hidden_video") {
+   next = () => {
+      if (this.video_in.className == "hidden_video") { // && this.video_out.className == "hidden_video"
          this.video_in.className = "video"
       } else if (this.video_in.className == "video") {
          this.video_in.className = "hidden_video"
-         this.video_out.className = "video"
       } else {
-         this.video_out.className = "hidden_video"
       }
    }
 }

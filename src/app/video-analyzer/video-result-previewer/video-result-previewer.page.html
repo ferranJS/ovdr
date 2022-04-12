@@ -1,0 +1,20 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      <button (click)="cancel()">
+        <i class="fa fa-times"></i>
+      </button>
+      video-result-previewer
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <video id="video_result" class="video" src="assets/video.mp4" controls autoplay muted loop></video>
+
+  <div id="tweeks">
+    <button id="pauseBtn" (click)="downloadVideo()">
+      <i [class]="video_in?.paused ? 'fa fa-play' : 'fa fa-arrow-down'"></i>
+    </button>
+  </div>
+</ion-content>

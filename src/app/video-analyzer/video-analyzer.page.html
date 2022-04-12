@@ -1,66 +1,72 @@
 
+<ion-header [translucent]="true">
+	<ion-toolbar> <!-- corta los pages de atrás!!-->
+		<ion-title style="white-space:nowrap;text-align:center">
+			Z A A X &nbsp;&nbsp; V I D E O &nbsp;&nbsp; A N A L I S Y S
+		</ion-title>
+	</ion-toolbar>
+</ion-header>
+<ion-content [fullscreen]="true" [scrollEvents]="false">
 	<div id="media-container">
-		<!-- https://css-tricks.com/what-does-playsinline-mean-in-web-video/ -->
+		<!-- https://css-tricks.com/what-does-playsinline-mean-in-web-video/ --> 
+		<!-- muted not working -->
 		<video id="video_in" class="hidden_video" controls autoplay muted loop playsinline>
-			<source src="assets/video.mp4" type="video/mp4">
-		</video>
-		<video id="video_out" class="hidden_video" controls autoplay muted loop>
+			<source [src]="video_url" type="video/mp4">
 		</video>
 
 		<div id="canvas-container">
-			<canvas id="output-canvas" class="canvas" style="position:absolute;top:0;left:0"></canvas>
-			<canvas id="temp-canvas" class="canvas" style="position:absolute;z-index:5;top:0;left:0;opacity:0"></canvas>
-			<canvas id="nodes-canvas" class="canvas" style="position:absolute;z-index:3;top:0;left:0;opacity:0"></canvas>
-
-			<div id="tweeks">
-				<input id="slider" type="range" min="2" max="10" step="0.03" value=6>
-				<div id="colorPicker-container">
-					<input id="colorPicker" type="color" name="head" value="#ffe5e5">
-				</div>
-				<input id="modeLines" type="radio" name="mode" (click)="selectMode('lines')" checked>
-				<label for="modeLines">
-					<i class="fa fa-slash"></i>
-				</label>
-				<input id="modePaint" type="radio" name="mode" (click)="selectMode('paint')">
-				<label for="modePaint">
-					<i class="fa fa-pencil"></i>
-				</label>
-				<input id="modeCircles" type="radio" name="mode" (click)="selectMode('circles')">
-				<label for="modeCircles">
-					<i class="far fa-circle"></i>
-				</label>
-				<input id="modeGrab" type="radio" name="mode" (click)="mode = 'grab'">
-				<!-- <input id="modeBorrar" type="radio" name="mode" (click)="selectMode('borrar')" disabled>
-				<label for="modeBorrar" class="radio disabled">
-					<i class="fa fa-eraser"></i>
-				</label> -->
-				<input id="videoRecord" type="checkbox">
-				<label for="videoRecord">
-					<i class="fa fa-compact-disc"></i>
-				</label>
-				<button (click)="undo()">
-					<i class="fa fa-undo"></i>
-				</button>
-				
-				<button (click)="clearCanvas()">
-					<i class="fa fa-trash"></i>
-				</button>
-				<button (click)="next()">
-					<i class="fa fa-arrow-right"></i>
-				</button>
+			<canvas id="output-canvas"></canvas>
+			<canvas id="temp-canvas" style="z-index:5;opacity:0"></canvas>
+			<canvas id="nodes-canvas" style="z-index:3;opacity:0"></canvas>
+		</div>
+		<div id="tweeks">
+			<input id="slider" type="range" min="2" max="10" step="0.03" value=6>
+			<div id="colorPicker-container">
+				<input id="colorPicker" type="color" name="head" value="#ffe5e5">
 			</div>
-			<div id="video-controls">
-				<button id="playBtn">
-					<i class="fa fa-pause"></i>
-				</button>
-				<button id="speedBtn">
-					<i class="fa fa-clock"></i>
-				</button>
-				<div id="timeline" style="width:66vw"> | | | </div>
-			</div>
+			<input id="modeLines" type="radio" name="mode" (click)="selectMode('lines')">
+			<label for="modeLines">
+				<i class="fa fa-slash"></i>
+			</label>
+			<input id="modePaint" type="radio" name="mode" (click)="selectMode('paint')">
+			<label for="modePaint">
+				<i class="fa fa-pencil"></i>
+			</label>
+			<input id="modeCircles" type="radio" name="mode" (click)="selectMode('circles')">
+			<label for="modeCircles">
+				<i class="far fa-circle"></i>
+			</label>
+			<input id="modeGrab" type="radio" name="mode" (click)="mode = 'grab'">
+			<!-- <input id="modeBorrar" type="radio" name="mode" (click)="selectMode('borrar')">
+			<label for="modeBorrar" class="radio">
+				<i class="fa fa-eraser"></i>
+			</label> -->
+			<input id="videoRecord" type="checkbox" [(ngModel)]="recording">
+			<label for="videoRecord">
+				<i class="fa fa-compact-disc"></i>
+			</label>
+			<button (click)="undo()">
+				<i class="fa fa-undo"></i>
+			</button>
+			
+			<button (click)="clearCanvas()">
+				<i class="fa fa-trash"></i>
+			</button>
+			<!-- <button (click)="next()">
+				<i class="fa fa-arrow-right"></i>
+			</button> -->
+		</div>
+		<div id="video-controls">
+			<button id="pauseBtn" (click)="video_in.paused ? video_in.play() : video_in.pause()">
+				<i [class]="video_in?.paused ? 'fa fa-play' : 'fa fa-pause'"></i>
+			</button>
+			<button id="speedBtn" (click)="video_in.playbackRate = video_in.playbackRate<0.5 ? 1 : video_in.playbackRate/1.7">
+				<i class="fa fa-clock">{{video_in?.playbackRate.toString().slice(1,3) || 1}}</i>
+			</button>
+			<div id="timeline" style="width:58vw"> | | | </div>
 		</div>
 	</div>
-
+</ion-content>
 	<!-- <script>
 		document.addEventListener("DOMContentLoaded", () => {
 			init()
