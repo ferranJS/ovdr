@@ -137,6 +137,7 @@ export class VideoAnalyzerPage {
       }
       // https://gist.github.com/AVGP/4c2ce4ab3c67760a0f30a9d54544a060
       // https://www.npmjs.com/package/webm-to-mp4
+      // ffmpeg -i input.webm -preset superfast output.mp4 !!! seguramente lo mejor
       this.mediaRecorder.onstop = (ev) => {
          const blob = new Blob(chunks, { 'type': 'video/webm' })
          const src =   window.URL.createObjectURL(blob)
