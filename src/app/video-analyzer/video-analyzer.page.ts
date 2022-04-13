@@ -128,7 +128,7 @@ export class VideoAnalyzerPage {
       // video/webm;codecs=h264,opus
       // video/webm;codecs=h264,vp9,opus
       // video/x-matroska;codecs=avc1
-      const options = { mimeType: 'video/webm; codecs=vp9' } // codecs=vp9
+      const options = { mimeType: 'video/mp4; codecs=vp9' } // codecs=vp9
       this.mediaRecorder = new MediaRecorder(combinedStream, options)
       let chunks = []
 
@@ -140,7 +140,7 @@ export class VideoAnalyzerPage {
       // https://www.npmjs.com/package/webm-to-mp4
       // ffmpeg -i input.webm -preset superfast output.mp4 !!! seguramente lo mejor
       this.mediaRecorder.onstop = (ev) => {
-         const blob = new Blob(chunks, { 'type': 'video/webm; codecs=vp9' })
+         const blob = new Blob(chunks, { 'type': 'video/mp4; codecs=vp9' })
          const src =   window.URL.createObjectURL(blob)
          // que pase al vídeo resultado !!!
          this.openVideoResultModal(src)
