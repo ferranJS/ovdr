@@ -106,7 +106,7 @@ ion-content {
     pointer-events: none;
 }
 // los botones de modo , el botón de grabar
-button, input[type="radio"]+label, input[type="checkbox"] + label, input[type="file"] + label, #timeline{
+button, input[type="radio"] + label, input[type="checkbox"] + label, input[type="file"] + label, #timeline{
     margin: 10px;
     align-items: center;
     appearance: none;
@@ -138,6 +138,10 @@ button, input[type="radio"]+label, input[type="checkbox"] + label, input[type="f
     pointer-events: all;
     -webkit-tap-highlight-color: transparent;
     margin-right: 0;
+}
+.hide_btns {
+    transition: 0.5s;
+    visibility: hidden;
 }
 
 button:active {
