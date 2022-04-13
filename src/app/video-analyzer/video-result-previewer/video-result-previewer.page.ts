@@ -25,13 +25,16 @@ export class VideoResultPreviewerPage implements OnInit {
     this.modalController.dismiss(true)
   }
 
-  downloadVideo(url = this.src) {
+  shareVideo = () => {
+
+  }
+
+  downloadVideo = (url = this.src) => {
     this.http.get(url, { 
       responseType: 'blob',
       reportProgress: true,
       observe: 'events'
-    },
-    ).subscribe(async (event) => {
+    }).subscribe(async (event) => {
       if (event.type === HttpEventType.DownloadProgress) {
         this.downloadProgress = Math.round(100 * event.loaded / event.total);
       } else if (event.type === HttpEventType.Response) {
@@ -40,13 +43,20 @@ export class VideoResultPreviewerPage implements OnInit {
         const name = url.substring(url.lastIndexOf('/') + 1)
         const base64 = await this.blobToBase64(event.body) as string
 
-        const saved = await Filesystem.writeFile({
-          path: name,
+        const saved = Filesystem.writeFile({
+          path: name,  // genera un .webm (no reproducible en Android (y iOS?)) | .mp4 (reproducible en iOS y Android)
           data: base64,
           directory: Directory.Documents
+        }).then(() => {
+          // alert('Video saved to DOCUMENTS')
+          console.log("saved: ", saved);   //saved.uri
+        }).catch((e) => {
+          // alert('Error saving video')
+          console.log(e)
         })
-        //aquí iría mimeType.. fileopner etc..
-        console.log("saved: ", saved);   //saved.uri
+
+        //aquí iría mimeType.. fileopner etc. pero no se como hacerlo
+                                          // ↗ generado por github copilot xd
       }
     })
   }

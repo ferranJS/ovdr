@@ -14,7 +14,10 @@
 
   <div id="tweeks">
     <button id="pauseBtn" (click)="downloadVideo()">
-      <i [class]="video_in?.paused ? 'fa fa-play' : 'fa fa-arrow-down'"></i>
+      <i [class]="'fa fa-arrow-down'"></i>
+    </button>
+    <button id="shareBtn" (click)="shareVideo()">
+      <i [class]="'fa fa-share'"></i>
     </button>
   </div>
 </ion-content>
