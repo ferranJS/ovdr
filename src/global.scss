@@ -135,6 +135,10 @@ button, input + label, #timeline {
     -webkit-tap-highlight-color: transparent;
     margin-right: 0;
 }
+.hide_btns {
+    transition: 0.5s;
+    visibility: hidden;
+}
 
 //modos y grabar checked
 input:checked + label, button:active, input[type="file"]:active + label {
