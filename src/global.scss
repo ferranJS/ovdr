@@ -56,10 +56,6 @@ canvas {
     left: 0;
 }
 
-ion-content {
-    --overflow: hidden;
-}
-
 #media-container {
     display: flex;
     /* height: 100vh;
@@ -106,7 +102,7 @@ ion-content {
     pointer-events: none;
 }
 // los botones de modo , el botón de grabar
-button, input[type="radio"]+label, input[type="checkbox"] + label, input[type="file"] + label, #timeline{
+button, input + label, #timeline {
     margin: 10px;
     align-items: center;
     appearance: none;
@@ -139,26 +135,13 @@ button, input[type="radio"]+label, input[type="checkbox"] + label, input[type="f
     -webkit-tap-highlight-color: transparent;
     margin-right: 0;
 }
-
-button:active {
-    background-color: #666677;
-    color: #ffffff;
-    box-shadow: 0 15px 45px rgba(24, 249, 140, 0.034);
-    transform: translateY(1px);
-    border-bottom: 0;
-}
-
-//que no aparezcan como tal (se activan con los divs)
-input[type="radio"], input[type="checkbox"], input[type="file"] { 
-    -webkit-appearance: none
-}
-
-input[type="file"] {
-    visibility:hidden
+.hide_btns {
+    transition: 0.5s;
+    visibility: hidden;
 }
 
 //modos y grabar checked
-input[type="radio"]:checked + label, input[type="checkbox"]:checked + label, input[type="file"]:checked + label  {
+input:checked + label, button:active, input[type="file"]:active + label {
     background-color: #666677;
     color: #ffffff;
     box-shadow: 0 15px 45px rgba(24, 249, 140, 0.034);
@@ -197,7 +180,7 @@ input[type="checkbox"]:checked + label {
     background: #89899c;
     cursor: pointer;
 }
-//tiene container 
+//tiene container
 #colorPicker-container {
     margin: 10px;
     position: relative;
@@ -223,6 +206,17 @@ input[type="checkbox"]:checked + label {
     background-color: rgb(73, 63, 63);
     box-shadow: rgba(76, 65, 100, 0.4) 0 2px 4px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #2e2e33 0 -3px 0 inset;
     transform:unset;
+}
+
+ion-content {
+    --overflow: hidden;
+}
+//que no aparezcan como tal (se activan con los divs)
+input {
+    -webkit-appearance: none
+}
+input[type="file"] {
+    visibility:hidden
 }
 // no me acuerdo
 input:focus-visible {
