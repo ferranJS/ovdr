@@ -130,16 +130,16 @@ export class VideoAnalyzerPage {
       // }).catch(err => { console.log(err.name, err.message. err) })
       // console.log(MediaRecorder.isTypeSupported('video/webm;codecs=h264'))
       console.log(1)
-      var audioStream = await devices.getUserMedia({
-         audio: true,
-         video: false
-      })
+      // var audioStream = await devices.getUserMedia({
+      //    audio: true,
+      //    video: false
+      // })
       console.log(2)
       const canvasStream = this.c_out.captureStream(40 /*fps*/)
       console.log(3)
-      const combinedStream = new MediaStream([
-         ...audioStream.getAudioTracks(), ...canvasStream.getVideoTracks()
-      ])
+      // const combinedStream = new MediaStream([
+      //    ...audioStream.getAudioTracks(), ...canvasStream.getVideoTracks()
+      // ])
       console.log(4)
 
       // this.video_out.srcObject = combinedStream // (se va pasando el objeto)
@@ -160,10 +160,14 @@ export class VideoAnalyzerPage {
       // video/x-matroska;codecs=avc1
 
       console.log(5)
-      const options = { mimeType: 'video/mp4; codecs=vp9' } // codecs=vp9
+      const options = { 
+         audioBitsPerSecond: 128000,
+         videoBitsPerSecond: 2500000,
+         mimeType: 'video/mp4' 
+      } // codecs=vp9
       console.log(6)
 
-      this.mediaRecorder = new MediaRecorder(combinedStream, options)
+      this.mediaRecorder = new MediaRecorder(canvasStream, options)
       console.log(7)
 
       let chunks = []
@@ -176,7 +180,7 @@ export class VideoAnalyzerPage {
       // https://www.npmjs.com/package/webm-to-mp4
       // ffmpeg -i input.webm -preset superfast output.mp4 !!! seguramente lo mejor
       this.mediaRecorder.onstop = (ev) => {
-         const blob = new Blob(chunks, { 'type': 'video/mp4; codecs=vp9' })
+         const blob = new Blob(chunks, { 'type': 'video/mp4' })
          const src =   window.URL.createObjectURL(blob)
          // que pase al vídeo resultado !!!
          this.openVideoResultModal(src)
