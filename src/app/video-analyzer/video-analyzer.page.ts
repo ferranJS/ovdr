@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { VideoResultPreviewerPage } from './video-result-previewer/video-result-previewer.page';
 
@@ -13,6 +13,9 @@ export class VideoAnalyzerPage {
    btnGrab: HTMLElement
    btnErase: HTMLElement
    btnRecord: HTMLElement
+   btnClear: HTMLElement;
+   btnUndo: HTMLElement;
+
    slider: any
    colorPicker: any
    mode: string
@@ -43,6 +46,7 @@ export class VideoAnalyzerPage {
    recording = false
 
    @Input() video_url = "assets/video.mp4"
+   @ViewChild('fileInput', { static: false }) fileInput: ElementRef;
 
    constructor(private modalController: ModalController) { }
    
@@ -57,6 +61,7 @@ export class VideoAnalyzerPage {
       this.c_tmp = document.getElementById('temp-canvas')
       this.c_nodes = document.getElementById('nodes-canvas')
       this.canvasContainer = document.getElementById('canvas-container')
+      // this.btnClear = document.getElementById('clearBtn')
       this.ctx_tmp = this.c_tmp.getContext('2d')
       this.ctx_nodes = this.c_nodes.getContext('2d')
 
@@ -82,6 +87,8 @@ export class VideoAnalyzerPage {
       this.slider.addEventListener('input', this.changeThickness)
       this.colorPicker.addEventListener('input', this.changeColor)
 
+      // this.btnClear.addEventListener('click', this.hideUndo)
+
       // velocidad del video
       this.video_in.playbackRate = 1
 
@@ -90,6 +97,24 @@ export class VideoAnalyzerPage {
          if (this.recording) this.stopRecording()
          else this.startRecording()
       })
+   }
+   hideUndo(): any {
+      console.log("click")
+      this.btnUndo = document.getElementById('undoBtn')
+      this.btnClear = document.getElementById('clearBtn')
+      console.log("this.btnClear: ", this.btnClear);
+      this.btnUndo.classList.add("hide_btns")
+      // this.btnClear.classList.add("hide_btns")
+      // this.btnLines.classList.add("hide_btns")
+      // this.btnPaint.classList.add("hide_btns")
+      // this.slider.classList.add("hide_btns")
+      // this.colorPicker.classList.add("hide_btns")
+      setTimeout(_=>this.btnUndo.style.display = 'none', 1000)
+      setTimeout(_=>this.btnClear.style.display = 'none', 1000)
+      // setTimeout(_=>this.btnLines.style.display = 'none', 1000)
+      // setTimeout(_=>this.btnPaint.style.display = 'none', 1000)
+      // setTimeout(_=>this.slider.style.display = 'none', 1000)
+      // setTimeout(_=>this.colorPicker.style.display = 'none', 1000)
    }
 
     //////  DOCS  //////
@@ -185,6 +210,7 @@ export class VideoAnalyzerPage {
 
       this.canvasContainer.setAttribute('width', this.video_in.videoWidth) // *2
       this.canvasContainer.setAttribute('height', this.video_in.videoHeight) // *2
+
 
       this.changeThickness(null)
       this.ctx_tmp.strokeStyle = this.colorPicker.value
@@ -686,12 +712,16 @@ export class VideoAnalyzerPage {
       this.log.push([])
    }
 
-   next = () => {
-      if (this.video_in.className == "hidden_video") { // && this.video_out.className == "hidden_video"
-         this.video_in.className = "video"
-      } else if (this.video_in.className == "video") {
-         this.video_in.className = "hidden_video"
-      } else {
-      }
+   uploadFile = (e) => {
+      console.log("e: ", e);
+
    }
+   // next = () => {
+   //    if (this.video_in.className == "hidden_video") { // && this.video_out.className == "hidden_video"
+   //       this.video_in.className = "video"
+   //    } else if (this.video_in.className == "video") {
+   //       this.video_in.className = "hidden_video"
+   //    } else {
+   //    }
+   // }
 }

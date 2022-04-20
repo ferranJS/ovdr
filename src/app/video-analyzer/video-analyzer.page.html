@@ -45,13 +45,17 @@
 			<label for="videoRecord">
 				<i class="fa fa-compact-disc"></i>
 			</label>
-			<button (click)="undo()">
+			<button id="undoBtn" (click)="undo()">
 				<i class="fa fa-undo"></i>
 			</button>
 			
-			<button (click)="clearCanvas()">
+			<button id="clearBtn" (click)="clearCanvas()">
 				<i class="fa fa-trash"></i>
 			</button>
+			<input id="uploadFile" name="file_" type="file" (change)="uploadFile($event)">
+			<label for="uploadFile">
+				<i class="fa fa-arrow-up"></i>
+			</label>
 			<!-- <button (click)="next()">
 				<i class="fa fa-arrow-right"></i>
 			</button> -->
