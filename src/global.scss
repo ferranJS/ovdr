@@ -212,11 +212,9 @@ ion-content {
     --overflow: hidden;
 }
 //que no aparezcan como tal (se activan con los divs)
-input {
-    -webkit-appearance: none
-}
-input[type="file"] {
-    visibility:hidden
+input[type="radio"], input[type="checkbox"], input[type="file"] {
+    -webkit-appearance: none;
+    display:none;
 }
 // no me acuerdo
 input:focus-visible {

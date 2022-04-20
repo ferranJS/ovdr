@@ -48,7 +48,7 @@ export class VideoAnalyzerPage {
    @Input() video_url = "assets/video.mp4"
    @ViewChild('fileInput', { static: false }) fileInput: ElementRef;
 
-   constructor(private modalController: ModalController) { }
+   constructor(private modalController: ModalController) { debugger }
    
    ionViewWillEnter() {
       this.slider = document.getElementById('slider')
@@ -123,19 +123,25 @@ export class VideoAnalyzerPage {
    async startRecording() {
       console.log("recording");
       let devices = navigator.mediaDevices
+      console.log("navigator: ", navigator);
+      console.log(devices)
       // devices.enumerateDevices().then(devices => {
       //    devices.forEach(device => { console.log(device.kind.toUpperCase(), device.label) })
       // }).catch(err => { console.log(err.name, err.message. err) })
       // console.log(MediaRecorder.isTypeSupported('video/webm;codecs=h264'))
-      
-      const audioStream = await devices.getUserMedia({
+      console.log(1)
+      var audioStream = await devices.getUserMedia({
          audio: true,
          video: false
       })
+      console.log(2)
       const canvasStream = this.c_out.captureStream(40 /*fps*/)
+      console.log(3)
       const combinedStream = new MediaStream([
          ...audioStream.getAudioTracks(), ...canvasStream.getVideoTracks()
       ])
+      console.log(4)
+
       // this.video_out.srcObject = combinedStream // (se va pasando el objeto)
       // video/webm
       // video/webm;codecs=vp8
@@ -152,8 +158,14 @@ export class VideoAnalyzerPage {
       // video/webm;codecs=h264,opus
       // video/webm;codecs=h264,vp9,opus
       // video/x-matroska;codecs=avc1
+
+      console.log(5)
       const options = { mimeType: 'video/mp4; codecs=vp9' } // codecs=vp9
+      console.log(6)
+
       this.mediaRecorder = new MediaRecorder(combinedStream, options)
+      console.log(7)
+
       let chunks = []
 
       this.mediaRecorder.ondataavailable = (ev: any) => {
