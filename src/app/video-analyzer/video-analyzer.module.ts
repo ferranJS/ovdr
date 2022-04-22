@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
-
+import { HttpClientModule } from '@angular/common/http';
 
 import { VideoAnalyzerPage } from './video-analyzer.page';
-import { VideoResultPreviewerPageModule } from './video-result-previewer/video-result-previewer.module';
 import { VideoAnalyzerPageRoutingModule } from './video-analyzer-routing.module';
+import { VideoResultPreviewerPage } from './video-result-previewer/video-result-previewer.page';
 
 @NgModule({
   // entryComponents: [ VideoResultPreviewerPage ],
@@ -16,9 +16,9 @@ import { VideoAnalyzerPageRoutingModule } from './video-analyzer-routing.module'
     FormsModule,
     IonicModule,
     VideoAnalyzerPageRoutingModule,
-    VideoResultPreviewerPageModule,
+    HttpClientModule
     // ComponentsModule
   ],
-  declarations: [VideoAnalyzerPage]
+  declarations: [VideoAnalyzerPage, VideoResultPreviewerPage]
 })
 export class VideoAnalyzerPageModule {}
