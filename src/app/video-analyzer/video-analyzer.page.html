@@ -2,16 +2,16 @@
 <ion-header [translucent]="true">
 	<ion-toolbar> <!-- corta los pages de atrás!!-->
 		<ion-title style="white-space:nowrap;text-align:center">
-			Z A A X &nbsp;&nbsp; V I D E O &nbsp;&nbsp; A N A L I S Y S
+			V I D E O &nbsp;&nbsp; A N A L Y Z E R
 		</ion-title>
 	</ion-toolbar>
 </ion-header>
-<ion-content [fullscreen]="true" [scrollEvents]="false">
+<ion-content [fullscreen]="true" [scrollY]="false" [scrollEvents]="false">
 	<div id="media-container">
 		<!-- https://css-tricks.com/what-does-playsinline-mean-in-web-video/ --> 
 		<!-- muted not working -->
 		<video id="video_in" class="hidden_video" controls autoplay muted loop playsinline>
-			<source [src]="video_url" type="video/mp4">
+			<source id="video_source" [src]="video_url" type="video/mp4">
 		</video>
 
 		<div id="canvas-container">
@@ -52,10 +52,6 @@
 			<button id="clearBtn" (click)="clearCanvas()">
 				<i class="fa fa-trash"></i>
 			</button>
-			<input id="uploadFile" name="file_" type="file" (change)="uploadFile($event)">
-			<label for="uploadFile">
-				<i class="fa fa-arrow-up"></i>
-			</label>
 			<!-- <button (click)="next()">
 				<i class="fa fa-arrow-right"></i>
 			</button> -->
