@@ -1,4 +1,5 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { VideoResultPreviewerPage } from './video-result-previewer/video-result-previewer.page';
 
@@ -45,12 +46,16 @@ export class VideoAnalyzerPage {
    mediaRecorder: MediaRecorder
    recording = false
 
-   @Input() video_url = "assets/video.mp4"
-   @ViewChild('fileInput', { static: false }) fileInput: ElementRef;
-
-   constructor(private modalController: ModalController) { }
+   video_source: any
+   
+   constructor(private modalController: ModalController, private actRoute: ActivatedRoute) { }
    
    ionViewWillEnter() {
+      this.actRoute.queryParams.subscribe(params => {
+         this.video_source = document.getElementById("video_source")
+         this.video_source.src = params.src
+         console.log(" this.video_source: ",  this.video_source);
+      })
       this.slider = document.getElementById('slider')
       this.colorPicker = document.getElementById("colorPicker")
       this.video_in = document.getElementById('video_in')
@@ -87,7 +92,6 @@ export class VideoAnalyzerPage {
       this.slider.addEventListener('input', this.changeThickness)
       this.colorPicker.addEventListener('input', this.changeColor)
 
-      // this.btnClear.addEventListener('click', this.hideUndo)
 
       // velocidad del video
       this.video_in.playbackRate = 1
@@ -97,24 +101,6 @@ export class VideoAnalyzerPage {
          if (this.recording) this.stopRecording()
          else this.startRecording()
       })
-   }
-   hideUndo(): any {
-      console.log("click")
-      this.btnUndo = document.getElementById('undoBtn')
-      this.btnClear = document.getElementById('clearBtn')
-      console.log("this.btnClear: ", this.btnClear);
-      this.btnUndo.classList.add("hide_btns")
-      // this.btnClear.classList.add("hide_btns")
-      // this.btnLines.classList.add("hide_btns")
-      // this.btnPaint.classList.add("hide_btns")
-      // this.slider.classList.add("hide_btns")
-      // this.colorPicker.classList.add("hide_btns")
-      setTimeout(_=>this.btnUndo.style.display = 'none', 1000)
-      setTimeout(_=>this.btnClear.style.display = 'none', 1000)
-      // setTimeout(_=>this.btnLines.style.display = 'none', 1000)
-      // setTimeout(_=>this.btnPaint.style.display = 'none', 1000)
-      // setTimeout(_=>this.slider.style.display = 'none', 1000)
-      // setTimeout(_=>this.colorPicker.style.display = 'none', 1000)
    }
 
     //////  DOCS  //////
@@ -165,7 +151,7 @@ export class VideoAnalyzerPage {
       // ffmpeg -i input.webm -preset superfast output.mp4 !!! seguramente lo mejor
       this.mediaRecorder.onstop = (ev) => {
          const blob = new Blob(chunks, { 'type': 'video/webm; codecs=vp9' })
-         const src =   window.URL.createObjectURL(blob)
+         const src = window.URL.createObjectURL(blob)
          // que pase al vídeo resultado !!!
          this.openVideoResultModal(src)
          this.video_in.className = "hidden_video"
@@ -712,10 +698,6 @@ export class VideoAnalyzerPage {
       this.log.push([])
    }
 
-   uploadFile = (e) => {
-      console.log("e: ", e);
-
-   }
    // next = () => {
    //    if (this.video_in.className == "hidden_video") { // && this.video_out.className == "hidden_video"
    //       this.video_in.className = "video"
