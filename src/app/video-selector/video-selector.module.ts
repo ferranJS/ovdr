@@ -4,16 +4,17 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { VideoResultPreviewerPage } from './video-result-previewer.page';
-import { HttpClientModule } from '@angular/common/http';
+import { VideoSelectorPageRoutingModule } from './video-selector-routing.module';
+
+import { VideoSelectorPage } from './video-selector.page';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    HttpClientModule,
+    VideoSelectorPageRoutingModule
   ],
-  declarations: [VideoResultPreviewerPage]
+  declarations: [VideoSelectorPage]
 })
-export class VideoResultPreviewerPageModule {}
+export class VideoSelectorPageModule {}

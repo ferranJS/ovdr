@@ -1,4 +1,5 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { VideoResultPreviewerPage } from './video-result-previewer/video-result-previewer.page';
 
@@ -45,12 +46,16 @@ export class VideoAnalyzerPage {
    mediaRecorder: MediaRecorder
    recording = false
 
-   @Input() video_url = "assets/video.mp4"
-   @ViewChild('fileInput', { static: false }) fileInput: ElementRef;
-
-   constructor(private modalController: ModalController) { debugger }
+   video_source: any
+   
+   constructor(private modalController: ModalController, private actRoute: ActivatedRoute) { }
    
    ionViewWillEnter() {
+      this.actRoute.queryParams.subscribe(params => {
+         this.video_source = document.getElementById("video_source")
+         this.video_source.src = params.src
+         console.log(" this.video_source: ",  this.video_source);
+      })
       this.slider = document.getElementById('slider')
       this.colorPicker = document.getElementById("colorPicker")
       this.video_in = document.getElementById('video_in')
@@ -87,7 +92,6 @@ export class VideoAnalyzerPage {
       this.slider.addEventListener('input', this.changeThickness)
       this.colorPicker.addEventListener('input', this.changeColor)
 
-      // this.btnClear.addEventListener('click', this.hideUndo)
 
       // velocidad del video
       this.video_in.playbackRate = 1
@@ -97,24 +101,7 @@ export class VideoAnalyzerPage {
          if (this.recording) this.stopRecording()
          else this.startRecording()
       })
-   }
-   hideUndo(): any {
-      console.log("click")
-      this.btnUndo = document.getElementById('undoBtn')
-      this.btnClear = document.getElementById('clearBtn')
-      console.log("this.btnClear: ", this.btnClear);
-      this.btnUndo.classList.add("hide_btns")
-      // this.btnClear.classList.add("hide_btns")
-      // this.btnLines.classList.add("hide_btns")
-      // this.btnPaint.classList.add("hide_btns")
-      // this.slider.classList.add("hide_btns")
-      // this.colorPicker.classList.add("hide_btns")
-      setTimeout(_=>this.btnUndo.style.display = 'none', 1000)
-      setTimeout(_=>this.btnClear.style.display = 'none', 1000)
-      // setTimeout(_=>this.btnLines.style.display = 'none', 1000)
-      // setTimeout(_=>this.btnPaint.style.display = 'none', 1000)
-      // setTimeout(_=>this.slider.style.display = 'none', 1000)
-      // setTimeout(_=>this.colorPicker.style.display = 'none', 1000)
+      try{this.video_in.play()} catch(e) {console.log}
    }
 
     //////  DOCS  //////
@@ -129,18 +116,18 @@ export class VideoAnalyzerPage {
       //    devices.forEach(device => { console.log(device.kind.toUpperCase(), device.label) })
       // }).catch(err => { console.log(err.name, err.message. err) })
       // console.log(MediaRecorder.isTypeSupported('video/webm;codecs=h264'))
-      console.log(1)
+      console.log("startrecording"+1)
       // var audioStream = await devices.getUserMedia({
       //    audio: true,
       //    video: false
       // })
-      console.log(2)
+      console.log("startrecording"+2)
       const canvasStream = this.c_out.captureStream(40 /*fps*/)
-      console.log(3)
+      console.log("startrecording"+3)
       // const combinedStream = new MediaStream([
       //    ...audioStream.getAudioTracks(), ...canvasStream.getVideoTracks()
       // ])
-      console.log(4)
+      console.log("startrecording"+4)
 
       // this.video_out.srcObject = combinedStream // (se va pasando el objeto)
       // video/webm
@@ -159,16 +146,16 @@ export class VideoAnalyzerPage {
       // video/webm;codecs=h264,vp9,opus
       // video/x-matroska;codecs=avc1
 
-      console.log(5)
+      console.log("startrecording"+5)
       const options = { 
          audioBitsPerSecond: 128000,
          videoBitsPerSecond: 2500000,
          mimeType: 'video/mp4' 
       } // codecs=vp9
-      console.log(6)
+      console.log("startrecording"+6)
 
       this.mediaRecorder = new MediaRecorder(canvasStream, options)
-      console.log(7)
+      console.log("startrecording"+7)
 
       let chunks = []
 
@@ -728,10 +715,6 @@ export class VideoAnalyzerPage {
       this.log.push([])
    }
 
-   uploadFile = (e) => {
-      console.log("e: ", e);
-
-   }
    // next = () => {
    //    if (this.video_in.className == "hidden_video") { // && this.video_out.className == "hidden_video"
    //       this.video_in.className = "video"
