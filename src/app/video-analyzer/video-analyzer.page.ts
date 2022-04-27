@@ -1,6 +1,7 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ModalController } from '@ionic/angular';
+import { VideoService } from '../services/video.service';
 import { VideoResultPreviewerPage } from './video-result-previewer/video-result-previewer.page';
 
 @Component({
@@ -22,7 +23,7 @@ export class VideoAnalyzerPage {
    mode: string
    video_in: any
    c_out: any
-   ctx_out: any
+   ctx_out: CanvasRenderingContext2D
    c_tmp: any
    ctx_tmp: any
    c_nodes: any
@@ -48,11 +49,11 @@ export class VideoAnalyzerPage {
 
    video_source: any
    
-   constructor(private modalController: ModalController, private actRoute: ActivatedRoute) { }
+   constructor(private modalController: ModalController, private actRoute: ActivatedRoute, private videoService: VideoService) { }
    
    ionViewWillEnter() {
       this.actRoute.queryParams.subscribe(params => {
-         this.video_source = document.getElementById("video_source")
+         this.video_source = document.getElementById("video_in")
          this.video_source.src = params.src
          console.log(" this.video_source: ",  this.video_source);
       })
@@ -101,7 +102,6 @@ export class VideoAnalyzerPage {
          if (this.recording) this.stopRecording()
          else this.startRecording()
       })
-      try{this.video_in.play()} catch(e) {console.log}
    }
 
     //////  DOCS  //////
@@ -166,8 +166,9 @@ export class VideoAnalyzerPage {
       // https://gist.github.com/AVGP/4c2ce4ab3c67760a0f30a9d54544a060
       // https://www.npmjs.com/package/webm-to-mp4
       // ffmpeg -i input.webm -preset superfast output.mp4 !!! seguramente lo mejor
-      this.mediaRecorder.onstop = (ev) => {
+      this.mediaRecorder.onstop = async (ev) => {
          const blob = new Blob(chunks, { 'type': 'video/mp4' })
+         // await this.videoService.storeVideo(blob)
          const src =   window.URL.createObjectURL(blob)
          // que pase al vídeo resultado !!!
          this.openVideoResultModal(src)
@@ -204,6 +205,8 @@ export class VideoAnalyzerPage {
 
       this.c_out.setAttribute('width', this.video_in.videoWidth) // *2
       this.c_out.setAttribute('height', this.video_in.videoHeight) // *2
+      console.log("this.video_in.videoHeight: ", this.video_in.videoHeight);
+      console.log("c_out: ", this.c_out);
 
       this.c_tmp.setAttribute('width', this.video_in.videoWidth) // *2
       this.c_tmp.setAttribute('height', this.video_in.videoHeight) // *2

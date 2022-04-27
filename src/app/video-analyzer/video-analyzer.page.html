@@ -10,8 +10,11 @@
 	<div id="media-container">
 		<!-- https://css-tricks.com/what-does-playsinline-mean-in-web-video/ --> 
 		<!-- muted not working -->
-		<video id="video_in" class="hidden_video" autoplay muted loop playsinline>
-			<source id="video_source" [src]="video_url" type="video">
+		<video id="video_in" class="hidden_video" autoplay playsinline muted >
+			<!-- [hidden]="!recording" [src]="video_url"  -->
+			<source id="video_source" [src]="video_url" type="video/mp4">
+<!-- 	debería estar en visible y pasar a hidden y darle play xq al estar 
+			en hidden no deja hacer playsinline!		 -->
 		</video>
 
 		<div id="canvas-container">
