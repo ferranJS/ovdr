@@ -28,7 +28,8 @@ export class VideoAnalyzerPage {
    ctx_tmp: any
    c_nodes: any
    ctx_nodes: any
-   canvasContainer: HTMLElement
+   canvasContainer: any
+   canvas_height: number
 
    points: any = []
    x: number  // x e y tras getPosition
@@ -111,23 +112,19 @@ export class VideoAnalyzerPage {
       console.log("recording");
       let devices = navigator.mediaDevices
       console.log("navigator: ", navigator);
-      console.log(devices)
+      console.log("devices: ", !devices?'no devices':devices)
       // devices.enumerateDevices().then(devices => {
       //    devices.forEach(device => { console.log(device.kind.toUpperCase(), device.label) })
       // }).catch(err => { console.log(err.name, err.message. err) })
       // console.log(MediaRecorder.isTypeSupported('video/webm;codecs=h264'))
-      console.log("startrecording"+1)
       // var audioStream = await devices.getUserMedia({
       //    audio: true,
       //    video: false
       // })
-      console.log("startrecording"+2)
       const canvasStream = this.c_out.captureStream(40 /*fps*/)
-      console.log("startrecording"+3)
       // const combinedStream = new MediaStream([
       //    ...audioStream.getAudioTracks(), ...canvasStream.getVideoTracks()
       // ])
-      console.log("startrecording"+4)
 
       // this.video_out.srcObject = combinedStream // (se va pasando el objeto)
       // video/webm
@@ -146,16 +143,13 @@ export class VideoAnalyzerPage {
       // video/webm;codecs=h264,vp9,opus
       // video/x-matroska;codecs=avc1
 
-      console.log("startrecording"+5)
       const options = { 
          audioBitsPerSecond: 128000,
          videoBitsPerSecond: 2500000,
          mimeType: 'video/mp4' 
       } // codecs=vp9
-      console.log("startrecording"+6)
 
       this.mediaRecorder = new MediaRecorder(canvasStream, options)
-      console.log("startrecording"+7)
 
       let chunks = []
 
@@ -172,15 +166,17 @@ export class VideoAnalyzerPage {
          const src =   window.URL.createObjectURL(blob)
          // que pase al vídeo resultado !!!
          this.openVideoResultModal(src)
-         this.video_in.className = "hidden_video"
+         // this.video_in.className = "hidden_video"
       }
       this.mediaRecorder.start()
    }
 
    stopRecording() {
       console.log("recording stopped");
-      this.mediaRecorder.stop()
-      this.mediaRecorder = null
+      setTimeout( _ => {    // xq deja de grabar bastante antes
+         this.mediaRecorder.stop()
+         this.mediaRecorder = null
+      }, 4000)
    }
 
    async openVideoResultModal(src:string) {
@@ -194,29 +190,28 @@ export class VideoAnalyzerPage {
          if (hasCanceled) {
             this.clearCanvas()
             this.log = [[]]
-            console.log(this.points, this.log, this.grabedNodes, this.x,this.y, this.x0, this.y0)
+            // console.log(this.points, this.log, this.grabedNodes, this.x,this.y, this.x0, this.y0)
          }
       })
    }
 
    prepareCanvas = () => {
+    // FULL SCREEN WIDTH Y ALTURA PROPORCIONAL
+      this.canvas_height = (this.video_in.videoHeight/this.video_in.videoWidth)*window.innerWidth
       this.video_in.removeEventListener('play', this.prepareCanvas)
       this.video_in.muted = true  //hay q hacerlo manual xq en html no va
 
-      this.c_out.setAttribute('width', this.video_in.videoWidth) // *2
-      this.c_out.setAttribute('height', this.video_in.videoHeight) // *2
-      console.log("this.video_in.videoHeight: ", this.video_in.videoHeight);
-      console.log("c_out: ", this.c_out);
+      this.c_out.setAttribute('width', window.innerWidth) // *2
+      this.c_out.setAttribute('height', this.canvas_height) // *2
 
-      this.c_tmp.setAttribute('width', this.video_in.videoWidth) // *2
-      this.c_tmp.setAttribute('height', this.video_in.videoHeight) // *2
+      this.c_tmp.setAttribute('width', window.innerWidth) // *2
+      this.c_tmp.setAttribute('height', this.canvas_height) // *2
 
-      this.c_nodes.setAttribute('width', this.video_in.videoWidth) // *2
-      this.c_nodes.setAttribute('height', this.video_in.videoHeight) // *2
+      this.c_nodes.setAttribute('width', window.innerWidth) // *2
+      this.c_nodes.setAttribute('height', this.canvas_height) // *2
 
-      this.canvasContainer.setAttribute('width', this.video_in.videoWidth) // *2
-      this.canvasContainer.setAttribute('height', this.video_in.videoHeight) // *2
-
+      this.canvasContainer.setAttribute('width', window.innerWidth) // *2
+      this.canvasContainer.setAttribute('height', this.canvas_height) // *2
 
       this.changeThickness(null)
       this.ctx_tmp.strokeStyle = this.colorPicker.value
@@ -230,8 +225,10 @@ export class VideoAnalyzerPage {
 
    computeFrame = () => {
       // if (video_in.paused || video_in.ended) { return  }
-
-      this.ctx_out.drawImage(this.video_in, 0, 0, this.video_in.videoWidth, this.video_in.videoHeight)
+      this.ctx_out.drawImage(this.video_in, 0, 0, window.innerWidth, this.canvas_height)
+      // console.log("this.video_in.videoWidth: ", this.video_in.videoWidth);
+      // console.log("this.video_in.videoHeight: ", this.video_in.videoHeight);
+      // console.log(window.innerWidth, window.innerHeight);
       // ctx_out.drawImage(video_in, 0, 0, video_in.videoWidth*2, video_in.videoHeight*2, 0, 0, video_in.videoWidth*4, video_in.videoHeight*4)
 
       // let frame = ctx_out.reateImageData()    //no
