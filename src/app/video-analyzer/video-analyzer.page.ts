@@ -109,6 +109,8 @@ export class VideoAnalyzerPage {
    async startRecording() {
       console.log("recording");
       let devices = navigator.mediaDevices
+      console.log("navigator: ", navigator);
+      console.log("devices: ", !devices?'no devices':devices)
       // devices.enumerateDevices().then(devices => {
       //    devices.forEach(device => { console.log(device.kind.toUpperCase(), device.label) })
       // }).catch(err => { console.log(err.name, err.message. err) })
@@ -138,7 +140,18 @@ export class VideoAnalyzerPage {
       // video/webm;codecs=h264,opus
       // video/webm;codecs=h264,vp9,opus
       // video/x-matroska;codecs=avc1
-      const options = { mimeType: 'video/webm; codecs=vp9' } // codecs=vp9
+            // bits_per_second = 16000000 for 2K video,
+      // bits_per_second = 8000000 for 1080p video,
+      // bits_per_second = 5000000 for 720p video,
+      // bits_per_second = 2500000 for 480p video,
+      // bits_per_second = 1000000 for 360p video
+      const options = { 
+         bitsPerSecond: 8128000,  //Clamping calculated audio bitrate (800000bps) to the maximum (128000bps)
+         audioBitsPerSecond: 128000, // A EDITAR!
+         videoBitsPerSecond: 8000000,
+         mimeType: 'video/webm; codecs=vp9' 
+      } // codecs=vp9
+      
       this.mediaRecorder = new MediaRecorder(combinedStream, options)
       let chunks = []
 
