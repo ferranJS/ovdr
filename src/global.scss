@@ -25,35 +25,45 @@
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
 
-body {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 17px;
-    color: #36395A;
-    background-color: #1f1f1f;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
-}
-*, *::before, *::after {
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
-}
+// body {
+//     font-family: "JetBrains Mono", monospace;
+//     font-size: 17px;
+//     color: #36395A;
+//     background-color: #1f1f1f;
+//     height: 100vh;
+//     width: 100vw;
+//     overflow: hidden;
+// }
+// *, *::before, *::after {
+//     padding: 0;
+//     margin: 0;
+//     box-sizing: border-box;
+// }
 i {
     font-size: 25px;
 }
 
 #canvas-container {
     /* border:#e3e3e4 1px solid; */
-    position: relative;
-    /* height: 100vh;
-    width: 100vw; */
+    // position: relative;
+    width: 100vw;
+    height: 100vh;
 }
 
 canvas {
     position: absolute;
-    top: 0;
+    bottom: 5%;
     left: 0;
+    // width: 100%;
+    // height: auto;
+}
+
+video {
+    visibility: hidden;  // quizás en ios haya q ponerlo visible y luego ocultarlo
+    position: absolute;
+    z-index:-50;
+    width: 100vw;
+    height: auto;
 }
 
 #media-container {
@@ -66,11 +76,6 @@ canvas {
     visibility: hidden;
     position: absolute;
     z-index:-50;
-}
-.video {
-    width:auto
-    /* height: auto;
-    width: 100vw; */
 }
 
 #tweeks {
@@ -208,9 +213,6 @@ input[type="checkbox"]:checked + label {
     transform:unset;
 }
 
-ion-content {
-    --overflow: hidden;
-}
 //que no aparezcan como tal (se activan con los divs)
 input {
     -webkit-appearance: none
