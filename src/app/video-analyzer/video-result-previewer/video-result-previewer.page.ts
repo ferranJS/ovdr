@@ -1,30 +1,52 @@
 import { HttpClient, HttpEventType } from '@angular/common/http';
-import { Component, Input, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { VideoService } from 'src/app/services/video.service';
+import { Capacitor } from '@capacitor/core';
+import { CapacitorVideoPlayer } from 'capacitor-video-player';
 @Component({
   selector: 'app-video-result-previewer',
   templateUrl: './video-result-previewer.page.html',
   styleUrls: ['./video-result-previewer.page.scss'],
 })
-export class VideoResultPreviewerPage implements OnInit {
+export class VideoResultPreviewerPage implements AfterViewInit {
 
   @Input() src: string
   video_result: any
-
+  videos: any
   downloadProgress: number = 0
+  videoPlayer: any
 
-  constructor(private modalController: ModalController, private http: HttpClient) { }
+  constructor(private modalController: ModalController, private http: HttpClient, private videoService: VideoService) { }
 
-  ngOnInit() {
+  async ngAfterViewInit() {
     this.video_result = document.getElementById('video_result')
     this.video_result['src'] = this.src
+    this.videos = await this.videoService.loadVideos()
+
+    // if(Capacitor.isNativePlatform()) 
+      this.videoPlayer = CapacitorVideoPlayer
+    // else
+    //   this.videoPlayer = WebVPPlugin.CapacitorVideoPlayer
+    
   }
 
   cancel() {
     this.modalController.dismiss(true)
   }
 
+  async playVideo(video) {
+    const base64data = await this.videoService.getVideoUrl(video)
+
+    await this.videoPlayer.initPlayer({
+      mode: 'fullscreen',
+      url: base64data,
+      playerId: 'fullscreen',
+      componentTag: 'app-video-result-previewer'
+    })
+  }
+ 
   shareVideo = () => {
 
   }
