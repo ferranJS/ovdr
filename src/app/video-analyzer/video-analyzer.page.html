@@ -12,8 +12,8 @@
 		<!-- muted not working -->
 
 		<div id="canvas-container">
-			<video id="video_in" controls autoplay muted loop playsinline>
-				<source id="video_source" [src]="video_url" type="video/mp4">
+			<video id="video_in" [src]="video_url" width="" height="" type="video/mp4" controls autoplay muted loop playsinline>
+				<!-- <source id="video_source" [src]="video_url" type="video/mp4"> -->
 			</video>
 			<canvas id="output-canvas"></canvas>
 			<canvas id="temp-canvas" style="z-index:5;opacity:0"></canvas>

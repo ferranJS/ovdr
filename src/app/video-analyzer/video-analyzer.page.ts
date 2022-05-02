@@ -54,6 +54,11 @@ export class VideoAnalyzerPage {
    
    ionViewWillEnter() {
       this.actRoute.queryParams.subscribe(params => {
+         if(!params.src) {  // realmente checkeaar si la ruta da a un vídeo real 
+            console.log("params.src: ", params.src);
+            window.history.back()
+            return
+         }
          this.video_source = document.getElementById("video_in")
          this.video_source.src = params.src
          console.log(" this.video_source: ",  this.video_source);
@@ -148,12 +153,15 @@ export class VideoAnalyzerPage {
          videoBitsPerSecond: 2500000,
          mimeType: 'video/mp4' 
       } // codecs=vp9
-
+      
       this.mediaRecorder = new MediaRecorder(canvasStream, options)
-
+      // this.mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+      // this.mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+      // this.mediaRecorder.setAudioSamplingRate(44100);
+      // this.mediaRecorder.setAudioEncodingBitRate(256000);
       let chunks = []
 
-      this.mediaRecorder.ondataavailable = (ev: any) => {
+      this.mediaRecorder.ondataavailable = async (ev: any) => {
          if(ev.data && ev.data.size > 0) 
             chunks.push(ev.data)
       }
@@ -197,10 +205,15 @@ export class VideoAnalyzerPage {
 
    prepareCanvas = () => {
     // FULL SCREEN WIDTH Y ALTURA PROPORCIONAL
+         //  https://github.com/flowplayer/flowplayer/issues/1228
+
+      console.log("window.innerWidth: ", window.innerWidth);
+      setInterval(_=>console.log("this.video_in.videoWidth: ", this.video_in.videoWidth, this.video_in.videoHeight),3000)
+      // console.log("this.video_in.videoHeight: ", this.video_in.width);
       this.canvas_height = (this.video_in.videoHeight/this.video_in.videoWidth)*window.innerWidth
+      console.log("canvas_height: ", this.canvas_height);
       this.video_in.removeEventListener('play', this.prepareCanvas)
       this.video_in.muted = true  //hay q hacerlo manual xq en html no va
-
       this.c_out.setAttribute('width', window.innerWidth) // *2
       this.c_out.setAttribute('height', this.canvas_height) // *2
 

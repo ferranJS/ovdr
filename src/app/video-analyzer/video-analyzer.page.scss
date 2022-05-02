@@ -2,3 +2,8 @@
 ion-content {
     --overflow: hidden;
 }
+
+video {
+    opacity: 0;  // quizás en ios haya q ponerlo visible y luego ocultarlo
+    z-index:-50;
+}

@@ -59,9 +59,7 @@ canvas {
 }
 
 video {
-    visibility: hidden;  // quizás en ios haya q ponerlo visible y luego ocultarlo
     position: absolute;
-    z-index:-50;
     width: 100vw;
     height: auto;
 }
