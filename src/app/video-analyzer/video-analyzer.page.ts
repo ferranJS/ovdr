@@ -53,6 +53,11 @@ export class VideoAnalyzerPage {
    
    ionViewWillEnter() {
       this.actRoute.queryParams.subscribe(params => {
+         if(!params.src) {  // realmente checkeaar si la ruta da a un vídeo real 
+            console.log("params.src: ", params.src);
+            window.history.back()
+            return
+         }
          this.video_source = document.getElementById("video_source")
          this.video_source.src = params.src
          console.log(" this.video_source: ",  this.video_source);
@@ -154,9 +159,13 @@ export class VideoAnalyzerPage {
       } // codecs=vp9
       
       this.mediaRecorder = new MediaRecorder(combinedStream, options)
+      // this.mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+      // this.mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+      // this.mediaRecorder.setAudioSamplingRate(44100);
+      // this.mediaRecorder.setAudioEncodingBitRate(256000);
       let chunks = []
 
-      this.mediaRecorder.ondataavailable = (ev: any) => {
+      this.mediaRecorder.ondataavailable = async (ev: any) => {
          if(ev.data && ev.data.size > 0) 
             chunks.push(ev.data)
       }
