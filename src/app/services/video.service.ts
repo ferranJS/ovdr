@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Directory, Filesystem, FilesystemDirectory } from '@capacitor/filesystem';
-import { Storage } from '@capacitor/storage'
+import { Directory, Filesystem } from '@capacitor/filesystem';
+// import { Storage } from '@capacitor/storage'
 @Injectable({
   providedIn: 'root'
 })
@@ -11,11 +11,11 @@ export class VideoService {
 
   constructor() { }
 
-  async loadVideos() {
-    const videoList = await Storage.get({ key: this.VIDEOS_KEY })
-    this.videos = JSON.parse(videoList.value) || []
-    return this.videos
-  }
+  // async loadVideos() {
+  //   const videoList = await Storage.get({ key: this.VIDEOS_KEY })
+  //   this.videos = JSON.parse(videoList.value) || []
+  //   return this.videos
+  // }
 
   async storeVideo(blob) {
     const filename = new Date().getTime() + '.mp4'
@@ -30,10 +30,10 @@ export class VideoService {
     this.videos.unshift(savedFile.uri)
     console.log("this.videos: ", this.videos);
 
-    return Storage.set({
-      key: this.VIDEOS_KEY,
-      value: JSON.stringify(this.videos)
-    })
+    // return Storage.set({
+    //   key: this.VIDEOS_KEY,
+    //   value: JSON.stringify(this.videos)
+    // })
   }
 
   private convertBlobToBase64 = (blob:Blob) => new Promise((resolve,reject)=>{

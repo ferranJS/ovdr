@@ -23,7 +23,7 @@ export class VideoResultPreviewerPage implements AfterViewInit {
   async ngAfterViewInit() {
     this.video_result = document.getElementById('video_result')
     this.video_result['src'] = this.src
-    this.videos = await this.videoService.loadVideos()
+    // this.videos = await this.videoService.loadVideos()
 
     // if(Capacitor.isNativePlatform()) 
       this.videoPlayer = CapacitorVideoPlayer
