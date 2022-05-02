@@ -47,24 +47,22 @@ export class VideoAnalyzerPage {
    mediaRecorder: MediaRecorder
    recording = false
 
-   video_source: any
+   timelineTiles = (i) => Array(2000) 
    
    constructor(private modalController: ModalController, private actRoute: ActivatedRoute) { }
    
    ionViewWillEnter() {
       this.actRoute.queryParams.subscribe(params => {
+         console.log("params.src: ", params.src);
          if(!params.src) {  // realmente checkeaar si la ruta da a un vídeo real 
-            console.log("params.src: ", params.src);
             window.history.back()
             return
          }
-         this.video_source = document.getElementById("video_source")
-         this.video_source.src = params.src
-         console.log(" this.video_source: ",  this.video_source);
+         this.video_in = document.getElementById('video_in')
+         this.video_in.src = params.src
       })
       this.slider = document.getElementById('slider')
       this.colorPicker = document.getElementById("colorPicker")
-      this.video_in = document.getElementById('video_in')
 
       this.c_out = document.getElementById('output-canvas')
       this.ctx_out = this.c_out.getContext('2d')
@@ -187,7 +185,7 @@ export class VideoAnalyzerPage {
       setTimeout( _ => {    // xq deja de grabar bastante antes
          this.mediaRecorder.stop()
          this.mediaRecorder = null
-      }, 4000)
+      }, 10)
    }
 
    async openVideoResultModal(src:string) {
@@ -733,5 +731,5 @@ export class VideoAnalyzerPage {
    //       this.video_in.className = "hidden_video"
    //    } else {
    //    }
-   // }
+   // }   
 }

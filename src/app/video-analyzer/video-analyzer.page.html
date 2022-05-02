@@ -63,7 +63,12 @@
 			<button id="speedBtn" (click)="video_in.playbackRate = video_in.playbackRate<0.5 ? 1 : video_in.playbackRate/1.7">
 				<i class="fa fa-clock">{{video_in?.playbackRate.toString().slice(1,3) || 1}}</i>
 			</button>
-			<div id="timeline" style="width:58vw"> | | | </div>
+			<div id="timeline" style="width:66vw">
+				<div id="itemlist" style="width:fit-content;display:inline-flex;justify-content:center;align-items:center">
+					<span id="item" *ngFor="let v of timelineTiles(); let i=index" [style]="'margin-right:5px;color:#333434;
+					font-size:'+ ( i%2==0? 20 : 30 ) +'px'">|</span> 
+				</div>
+			</div>
 		</div>
 	</div>
 </ion-content>

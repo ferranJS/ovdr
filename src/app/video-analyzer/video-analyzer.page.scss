@@ -1,9 +1,58 @@
-
 ion-content {
     --overflow: hidden;
 }
 
 video {
-    visibility: hidden;  // quizás en ios haya q ponerlo visible y luego ocultarlo
-    z-index:-50;
+    visibility: hidden; // quizás en ios haya q ponerlo visible y luego ocultarlo
+    z-index: -50;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+canvas {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 100vw;
+    height: auto;
+}
+
+.itemlist {
+    position: relative;
+    width: 100%;
+    white-space: nowrap;
+    will-change: transform;
+    user-select: none;
+    cursor: pointer;
+}
+
+.items.active {
+    background: rgba(255, 255, 255, 0.3);
+    cursor: grabbing;
+    cursor: -webkit-grabbing;
+}
+
+.item {
+    display: inline-block;
+    background: skyblue;
+    min-height: 250px;
+    min-width: 400px;
+    margin: 2em 1em;
+    @media screen and (max-width: 500px) {
+        min-height: 200px;
+        min-width: 200px;
+    }
+}
+
+#timeline {
+    color: lighten(grey, 25%);
+    background-color: lighten(skyblue, 60%);
+    grid-area: main;
+    padding: 0;
+    overflow:auto;
+    scrollbar-width: none;  /* Firefox */
+}
+
+#timeline::-webkit-scrollbar {
+    display: none;
 }
