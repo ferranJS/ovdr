@@ -47,7 +47,7 @@ export class VideoAnalyzerPage {
    mediaRecorder: MediaRecorder
    recording = false
 
-   timelineTiles = (i) => Array(2000) 
+   timelineTiles = (i) => Array(100) 
    
    constructor(private modalController: ModalController, private actRoute: ActivatedRoute) { }
    
