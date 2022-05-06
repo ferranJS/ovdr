@@ -47,8 +47,11 @@ export class VideoAnalyzerPage {
    mediaRecorder: MediaRecorder
    recording = false
 
-   timelineTiles = (i) => Array(100) 
-   
+   // timelineTiles = (i) => Array(100) 
+   duration: number = 0
+   onTimeline: boolean;
+
+
    constructor(private modalController: ModalController, private actRoute: ActivatedRoute) { }
    
    ionViewWillEnter() {
@@ -205,7 +208,18 @@ export class VideoAnalyzerPage {
    }
 
    prepareCanvas = () => {
-    // FULL SCREEN WIDTH Y ALTURA PROPORCIONAL
+
+      let inner = document.getElementById('inner')
+      // FULL SCREEN WIDTH Y ALTURA PROPORCIONAL      
+      this.video_in.currentTime = 1000
+      this.video_in.play().then(()=>{
+         this.duration = this.video_in.currentTime
+         this.video_in.currentTime = 0.01
+         console.log("duration: ", this.duration);
+         inner.style.width = this.duration*800 +'px'
+         inner.style.right = -this.duration*800 +'px'
+      })
+
       this.canvas_height = (this.video_in.videoHeight/this.video_in.videoWidth)*window.innerWidth
       this.video_in.removeEventListener('play', this.prepareCanvas)
       this.video_in.muted = true  //hay q hacerlo manual xq en html no va
@@ -230,6 +244,63 @@ export class VideoAnalyzerPage {
 
       // video_in.removeEventListener('play', prepareCanvas)
       this.computeFrame()
+
+      // update the progress bar
+      this.video_in.addEventListener("timeupdate", () => {
+         if(this.onTimeline) return
+         let curr = (this.video_in.currentTime/this.duration)*(this.duration*800) - this.duration*800 
+         inner.style.right = `${curr}px`
+         console.log("inner.style.right: ", inner.style.right);
+      })
+
+      inner.addEventListener('touchstart', (e:any) => {
+         this.onTimeline = true
+         this.getPosition(e)
+      })
+      inner.addEventListener('touchend', _=> {
+         this.onTimeline = false
+         this.video_in.play()
+      })
+      inner.addEventListener('touchmove', this.manualTimelineFlow)
+   }
+   autoTimelineFlow = () => {
+      if(this.onTimeline) return
+
+      // timeline.scrollIntoView
+      
+      // video_in.currentTime = scrollPrcntg*video_in.duration
+      // console.log("this.: ", percentagePosition);
+      // timeline.style.backgroundSize = `${percentagePosition}% 100%`
+      // timeline.value = percentagePosition;
+   }
+   manualTimelineFlow = (e) => {
+      if(!this.onTimeline) return
+      this.video_in.pause()
+         
+      let timeline = document.getElementById("timeline")
+      let inner = document.getElementById("inner")
+
+      let x = this.x
+      this.getPosition(e)
+      // recorrido desde que he comenzado a tocar hasta que he movido el dedo
+      let increment = x - this.x
+
+      let newPosition = Number(inner.style.right.substring(0,inner.style.right.length-2))+increment
+      inner.style.right = `${newPosition}px`
+      console.log("nuevaPosicion: ", inner.style.right);
+
+      // cambiar tiempo respecto a la posicion del timeline
+      this.video_in.currentTime = (Number(inner.style.right.substring(0,inner.style.right.length-2)))/800 + this.duration;
+      console.log("this.video_in.currentTime: ", this.video_in.currentTime);
+   }
+
+   timelineTiles = () => Array(300) 
+
+   rewind = (e) => {
+      this.video_in.currentTime = this.video_in.currentTime - ((this.duration/100) * 5)
+   }
+   forward = (e) => {
+      this.video_in.currentTime = this.video_in.currentTime + ((this.duration/100) * 5)
    }
 
    computeFrame = () => {
