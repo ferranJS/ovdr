@@ -29,6 +29,8 @@ export class VideoAnalyzerPage {
    ctx_nodes: any
    canvasContainer: any
    canvas_height: number
+   
+   timelineNob: any;
 
    points: any = []
    x: number  // x e y tras getPosition
@@ -50,6 +52,12 @@ export class VideoAnalyzerPage {
    // timelineTiles = (i) => Array(100) 
    duration: number = 0
    onTimeline: boolean;
+   /**
+      valor adimensional
+    */
+   speed: number = 500
+   timelineTiles = () => Array(300) 
+
 
 
    constructor(private modalController: ModalController, private actRoute: ActivatedRoute) { }
@@ -73,7 +81,6 @@ export class VideoAnalyzerPage {
       this.c_tmp = document.getElementById('temp-canvas')
       this.c_nodes = document.getElementById('nodes-canvas')
       this.canvasContainer = document.getElementById('canvas-container')
-      // this.btnClear = document.getElementById('clearBtn')
       this.ctx_tmp = this.c_tmp.getContext('2d')
       this.ctx_nodes = this.c_nodes.getContext('2d')
 
@@ -95,6 +102,8 @@ export class VideoAnalyzerPage {
       this.canvasContainer.addEventListener('mouseup', this.stopAction)
       this.canvasContainer.addEventListener('mouseleave', this.stopAction)
       this.canvasContainer.addEventListener('mousemove', this.sketch)
+
+      this.timelineNob = document.getElementById('timelineNob')
 
       this.slider.addEventListener('input', this.changeThickness)
       this.colorPicker.addEventListener('input', this.changeColor)
@@ -208,16 +217,14 @@ export class VideoAnalyzerPage {
    }
 
    prepareCanvas = () => {
-
-      let inner = document.getElementById('inner')
       // FULL SCREEN WIDTH Y ALTURA PROPORCIONAL      
       this.video_in.currentTime = 1000
       this.video_in.play().then(()=>{
          this.duration = this.video_in.currentTime
          this.video_in.currentTime = 0.01
          console.log("duration: ", this.duration);
-         inner.style.width = this.duration*800 +'px'
-         inner.style.right = -this.duration*800 +'px'
+         this.timelineNob.style.width = this.duration*this.speed +'px'
+         this.timelineNob.style.right = -this.duration*this.speed +'px'
       })
 
       this.canvas_height = (this.video_in.videoHeight/this.video_in.videoWidth)*window.innerWidth
@@ -236,89 +243,52 @@ export class VideoAnalyzerPage {
       this.canvasContainer.setAttribute('width', window.innerWidth) // *2
       this.canvasContainer.setAttribute('height', this.canvas_height) // *2
 
+      this.timelineNob.addEventListener('touchstart', (e:any) => {
+         this.onTimeline = true
+         this.getPosition(e)
+      })
+      this.timelineNob.addEventListener('touchend', _=> this.onTimeline = false )
+      this.timelineNob.addEventListener('touchmove', this.manualTimelineFlow)
+
       this.changeThickness(null)
       this.ctx_tmp.strokeStyle = this.colorPicker.value
       this.ctx_tmp.lineCap = 'round'
       this.ctx_nodes.lineWidth = this.slider.value
       this.btnLines.click()  // botón presionado inicial!
 
-      // video_in.removeEventListener('play', prepareCanvas)
       this.computeFrame()
+      this.speed = 150
 
-      // update the progress bar
-      this.video_in.addEventListener("timeupdate", () => {
-         if(this.onTimeline) return
-         let curr = (this.video_in.currentTime/this.duration)*(this.duration*800) - this.duration*800 
-         inner.style.right = `${curr}px`
-         console.log("inner.style.right: ", inner.style.right);
-      })
-
-      inner.addEventListener('touchstart', (e:any) => {
-         this.onTimeline = true
-         this.getPosition(e)
-      })
-      inner.addEventListener('touchend', _=> {
-         this.onTimeline = false
-         this.video_in.play()
-      })
-      inner.addEventListener('touchmove', this.manualTimelineFlow)
+      this.autoTimelineFlow()
    }
+
    autoTimelineFlow = () => {
-      if(this.onTimeline) return
-
-      // timeline.scrollIntoView
-      
-      // video_in.currentTime = scrollPrcntg*video_in.duration
-      // console.log("this.: ", percentagePosition);
-      // timeline.style.backgroundSize = `${percentagePosition}% 100%`
-      // timeline.value = percentagePosition;
+      // if(this.onTimeline) return
+      let curr = this.video_in.currentTime*this.speed - this.duration*this.speed/2 
+      this.timelineNob.style.right = `${curr}px`
+      setTimeout(this.autoTimelineFlow,20) // esto dicta los fps
    }
+
    manualTimelineFlow = (e) => {
       if(!this.onTimeline) return
       this.video_in.pause()
          
-      let timeline = document.getElementById("timeline")
-      let inner = document.getElementById("inner")
-
+      // recorrido desde que he comenzado a tocar hasta que he movido el dedo
       let x = this.x
       this.getPosition(e)
-      // recorrido desde que he comenzado a tocar hasta que he movido el dedo
       let increment = x - this.x
 
-      let newPosition = Number(inner.style.right.substring(0,inner.style.right.length-2))+increment
-      inner.style.right = `${newPosition}px`
-      console.log("nuevaPosicion: ", inner.style.right);
+      let newPosition = Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2))+increment
+      this.timelineNob.style.right = `${newPosition}px`
 
       // cambiar tiempo respecto a la posicion del timeline
-      this.video_in.currentTime = (Number(inner.style.right.substring(0,inner.style.right.length-2)))/800 + this.duration;
-      console.log("this.video_in.currentTime: ", this.video_in.currentTime);
-   }
-
-   timelineTiles = () => Array(300) 
-
-   rewind = (e) => {
-      this.video_in.currentTime = this.video_in.currentTime - ((this.duration/100) * 5)
-   }
-   forward = (e) => {
-      this.video_in.currentTime = this.video_in.currentTime + ((this.duration/100) * 5)
+      let newMoment = (Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2)))/this.speed
+      this.video_in.currentTime = newMoment
    }
 
    computeFrame = () => {
       // if (video_in.paused || video_in.ended) { return  }
       this.ctx_out.drawImage(this.video_in, 0, 0, window.innerWidth, this.canvas_height)
-      // console.log("this.video_in.videoWidth: ", this.video_in.videoWidth);
-      // console.log("this.video_in.videoHeight: ", this.video_in.videoHeight);
-      // console.log(window.innerWidth, window.innerHeight);
-      // ctx_out.drawImage(video_in, 0, 0, video_in.videoWidth*2, video_in.videoHeight*2, 0, 0, video_in.videoWidth*4, video_in.videoHeight*4)
-
-      // let frame = ctx_out.reateImageData()    //no
-      // let frame = document.createElement('ImageData')
-      // let frame = new Image()
-      // let frame = new ImageData(video_in.videoWidth, video_in.videoHeight)
-      // frame.crossOrigin = "anonymous"
-
-      // ctx_out.drawImage(c_nodes, 0, 0, video_in.videoWidth*2, video_in.videoHeight*2, 0, 0, video_in.videoWidth*4, video_in.videoHeight*4)
-      // ctx_out.drawImage(c_tmp, 0, 0, video_in.videoWidth*2, video_in.videoHeight*2, 0, 0, video_in.videoWidth*4, video_in.videoHeight*4)
       this.ctx_out.drawImage(this.c_tmp, 0, 0)
       this.ctx_out.drawImage(this.c_nodes, 0, 0)
       setTimeout(this.computeFrame, 0)

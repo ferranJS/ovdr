@@ -17,40 +17,13 @@ canvas {
     height: auto;
 }
 
-.itemlist {
-    position: relative;
-    width: 100%;
-    white-space: nowrap;
-    will-change: transform;
-    user-select: none;
-    cursor: pointer;
-}
-
-.items.active {
-    background: rgba(255, 255, 255, 0.3);
-    cursor: grabbing;
-    cursor: -webkit-grabbing;
-}
-
-.item {
-    display: inline-block;
-    background: skyblue;
-    min-height: 250px;
-    min-width: 400px;
-    margin: 2em 1em;
-    @media screen and (max-width: 500px) {
-        min-height: 200px;
-        min-width: 200px;
-    }
-}
-
 #timeline {
     position:relative;
     color: lighten(grey, 25%);
     background-color: lighten(skyblue, 60%);
     grid-area: main;
     padding: 0;
-    overflow:auto;
+    overflow:none;
     scrollbar-width: none;  /* Firefox */
 }
 
@@ -58,11 +31,15 @@ canvas {
     display: none;
 }
 
-#inner {
+#timelineNob {
+    overflow:none;
     position: absolute;
     right:0;
     height:20px;
     width:300px;
+    height:90%;
+    justify-content:center;
+    align-items:center;
     background: rgb(0,255,248);
     background: linear-gradient(90deg, rgba(0,255,248,1) 0%, rgba(200,255,213,1) 13%, rgba(255,102,102,1) 25%, rgba(241,255,0,1) 37%, rgba(63,255,69,1) 50%, rgba(255,148,148,1) 63%, rgba(161,130,255,1) 75%, rgba(255,249,6,1) 88%, rgba(255,0,185,1) 100%);
 }
