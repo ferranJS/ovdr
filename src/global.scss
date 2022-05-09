@@ -39,6 +39,7 @@
 //     margin: 0;
 //     box-sizing: border-box;
 // }
+
 i {
     font-size: 25px;
 }
@@ -48,14 +49,11 @@ i {
     // position: relative;
     width: 100vw;
     height: 100vh;
-}
-
-canvas {
-    position: absolute;
-    bottom: 5%;
-    left: 0;
-    // width: 100%;
-    // height: auto;
+    background-image: radial-gradient(#2b2d3a 5%, transparent 5%),
+    radial-gradient(#2b2d3a 5%, transparent 5%);
+    background-color: #0e0e15;
+    background-position: 0 0, 35px 35px;
+    background-size: 35px 35px;
 }
 
 video {
@@ -71,7 +69,7 @@ video {
 }
 
 .hidden_video {
-    visibility: hidden;
+    // visibility: hidden;
     position: absolute;
     z-index:-50;
 }
@@ -212,11 +210,9 @@ input[type="checkbox"]:checked + label {
 }
 
 //que no aparezcan como tal (se activan con los divs)
-input {
-    -webkit-appearance: none
-}
-input[type="file"] {
-    visibility:hidden
+input[type="radio"], input[type="checkbox"], input[type="file"] {
+    -webkit-appearance: none;
+    display:none;
 }
 // no me acuerdo
 input:focus-visible {
