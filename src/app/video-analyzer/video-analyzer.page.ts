@@ -30,6 +30,8 @@ export class VideoAnalyzerPage {
    ctx_nodes: any
    canvasContainer: any
    canvas_height: number
+   
+   timelineNob: any;
 
    points: any = []
    x: number  // x e y tras getPosition
@@ -48,24 +50,31 @@ export class VideoAnalyzerPage {
    mediaRecorder: MediaRecorder
    recording = false
 
-   video_source: any
-   
-   constructor(private modalController: ModalController, private actRoute: ActivatedRoute, private videoService: VideoService) { }
+   // timelineTiles = (i) => Array(100) 
+   duration: number = 0
+   onTimeline: boolean;
+   /**
+      valor adimensional
+    */
+   speed: number = 500
+   timelineTiles = () => Array(300) 
+
+
+
+   constructor(private modalController: ModalController, private actRoute: ActivatedRoute) { }
    
    ionViewWillEnter() {
       this.actRoute.queryParams.subscribe(params => {
+         console.log("params.src: ", params.src);
          if(!params.src) {  // realmente checkeaar si la ruta da a un vídeo real 
-            console.log("params.src: ", params.src);
             window.history.back()
             return
          }
-         this.video_source = document.getElementById("video_in")
-         this.video_source.src = params.src
-         console.log(" this.video_source: ",  this.video_source);
+         this.video_in = document.getElementById('video_in')
+         this.video_in.src = params.src
       })
       this.slider = document.getElementById('slider')
       this.colorPicker = document.getElementById("colorPicker")
-      this.video_in = document.getElementById('video_in')
 
       this.c_out = document.getElementById('output-canvas')
       this.ctx_out = this.c_out.getContext('2d')
@@ -73,7 +82,6 @@ export class VideoAnalyzerPage {
       this.c_tmp = document.getElementById('temp-canvas')
       this.c_nodes = document.getElementById('nodes-canvas')
       this.canvasContainer = document.getElementById('canvas-container')
-      // this.btnClear = document.getElementById('clearBtn')
       this.ctx_tmp = this.c_tmp.getContext('2d')
       this.ctx_nodes = this.c_nodes.getContext('2d')
 
@@ -95,6 +103,8 @@ export class VideoAnalyzerPage {
       this.canvasContainer.addEventListener('mouseup', this.stopAction)
       this.canvasContainer.addEventListener('mouseleave', this.stopAction)
       this.canvasContainer.addEventListener('mousemove', this.sketch)
+
+      this.timelineNob = document.getElementById('timelineNob')
 
       this.slider.addEventListener('input', this.changeThickness)
       this.colorPicker.addEventListener('input', this.changeColor)
@@ -184,7 +194,7 @@ export class VideoAnalyzerPage {
       setTimeout( _ => {    // xq deja de grabar bastante antes
          this.mediaRecorder.stop()
          this.mediaRecorder = null
-      }, 4000)
+      }, 10)
    }
 
    async openVideoResultModal(src:string) {
@@ -204,12 +214,17 @@ export class VideoAnalyzerPage {
    }
 
    prepareCanvas = () => {
-    // FULL SCREEN WIDTH Y ALTURA PROPORCIONAL
-         //  https://github.com/flowplayer/flowplayer/issues/1228
 
-      console.log("window.innerWidth: ", window.innerWidth);
-      setInterval(_=>console.log("this.video_in.videoWidth: ", this.video_in.videoWidth, this.video_in.videoHeight),3000)
-      // console.log("this.video_in.videoHeight: ", this.video_in.width);
+      // FULL SCREEN WIDTH Y ALTURA PROPORCIONAL      
+      this.video_in.currentTime = 1000
+      this.video_in.play().then(()=>{
+         this.duration = this.video_in.currentTime
+         this.video_in.currentTime = 0.01
+         console.log("duration: ", this.duration);
+         this.timelineNob.style.width = this.duration*this.speed +'px'
+         this.timelineNob.style.right = -this.duration*this.speed +'px'
+      })
+
       this.canvas_height = (this.video_in.videoHeight/this.video_in.videoWidth)*window.innerWidth
       console.log("canvas_height: ", this.canvas_height);
       this.video_in.removeEventListener('play', this.prepareCanvas)
@@ -226,32 +241,59 @@ export class VideoAnalyzerPage {
       this.canvasContainer.setAttribute('width', window.innerWidth) // *2
       this.canvasContainer.setAttribute('height', this.canvas_height) // *2
 
+      this.timelineNob.addEventListener('touchstart', (e:any) => {
+         this.onTimeline = true
+         this.getPosition(e)
+      })
+      this.timelineNob.addEventListener('touchend', _=> this.onTimeline = false )
+      this.timelineNob.addEventListener('touchmove', this.manualTimelineFlow)
+
       this.changeThickness(null)
       this.ctx_tmp.strokeStyle = this.colorPicker.value
       this.ctx_tmp.lineCap = 'round'
       this.ctx_nodes.lineWidth = this.slider.value
       this.btnLines.click()  // botón presionado inicial!
 
-      // video_in.removeEventListener('play', prepareCanvas)
       this.computeFrame()
+      this.speed = 150
+
+      this.autoTimelineFlow()
+   }
+
+   autoTimelineFlow = () => {
+      if(!this.video_in.paused || !this.onTimeline) {
+         let curr = this.video_in.currentTime*this.speed
+         this.timelineNob.style.right = `${curr}px`
+      }
+      setTimeout(this.autoTimelineFlow,20) // esto dicta los fps
+   }
+
+   manualTimelineFlow = async (e) => {
+      if(!this.onTimeline) return
+      this.video_in.pause()
+
+      let x = this.x
+      this.getPosition(e)
+      // recorrido desde que he comenzado a tocar hasta que he movido el dedo
+      let increment = x - this.x
+
+      let newPosition = Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2))+increment
+      this.timelineNob.style.right = `${newPosition}px`
+
+      // cambiar tiempo respecto a la posicion del timeline
+      let newMoment = Math.round(
+         (Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2)))/this.speed
+            *10) / 10
+      if(Math.round(this.video_in.currentTime*10) / 10 == newMoment) return
+      if(newMoment > this.duration) newMoment = newMoment - this.duration
+      if(newMoment < 0) newMoment = this.duration - newMoment
+
+      this.video_in.currentTime = newMoment 
    }
 
    computeFrame = () => {
       // if (video_in.paused || video_in.ended) { return  }
       this.ctx_out.drawImage(this.video_in, 0, 0, window.innerWidth, this.canvas_height)
-      // console.log("this.video_in.videoWidth: ", this.video_in.videoWidth);
-      // console.log("this.video_in.videoHeight: ", this.video_in.videoHeight);
-      // console.log(window.innerWidth, window.innerHeight);
-      // ctx_out.drawImage(video_in, 0, 0, video_in.videoWidth*2, video_in.videoHeight*2, 0, 0, video_in.videoWidth*4, video_in.videoHeight*4)
-
-      // let frame = ctx_out.reateImageData()    //no
-      // let frame = document.createElement('ImageData')
-      // let frame = new Image()
-      // let frame = new ImageData(video_in.videoWidth, video_in.videoHeight)
-      // frame.crossOrigin = "anonymous"
-
-      // ctx_out.drawImage(c_nodes, 0, 0, video_in.videoWidth*2, video_in.videoHeight*2, 0, 0, video_in.videoWidth*4, video_in.videoHeight*4)
-      // ctx_out.drawImage(c_tmp, 0, 0, video_in.videoWidth*2, video_in.videoHeight*2, 0, 0, video_in.videoWidth*4, video_in.videoHeight*4)
       this.ctx_out.drawImage(this.c_tmp, 0, 0)
       this.ctx_out.drawImage(this.c_nodes, 0, 0)
       setTimeout(this.computeFrame, 0)
@@ -735,5 +777,5 @@ export class VideoAnalyzerPage {
    //       this.video_in.className = "hidden_video"
    //    } else {
    //    }
-   // }
+   // }   
 }

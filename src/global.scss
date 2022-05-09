@@ -39,6 +39,7 @@
 //     margin: 0;
 //     box-sizing: border-box;
 // }
+
 i {
     font-size: 25px;
 }
@@ -48,14 +49,11 @@ i {
     // position: relative;
     width: 100vw;
     height: 100vh;
-}
-
-canvas {
-    position: absolute;
-    bottom: 5%;
-    left: 0;
-    // width: 100%;
-    // height: auto;
+    background-image: radial-gradient(#2b2d3a 5%, transparent 5%),
+    radial-gradient(#2b2d3a 5%, transparent 5%);
+    background-color: #0e0e15;
+    background-position: 0 0, 35px 35px;
+    background-size: 35px 35px;
 }
 
 video {
@@ -99,7 +97,7 @@ video {
     align-items: flex-end !important;
     align-content: space-between;
     vertical-align: middle;
-    /* margin: auto 20px; */
+    width: 100%;
     padding: 10px;
     z-index:90;
     pointer-events: none;
