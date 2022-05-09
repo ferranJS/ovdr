@@ -263,27 +263,34 @@ export class VideoAnalyzerPage {
    }
 
    autoTimelineFlow = () => {
-      // if(this.onTimeline) return
-      let curr = this.video_in.currentTime*this.speed - this.duration*this.speed/2 
-      this.timelineNob.style.right = `${curr}px`
+      if(!this.video_in.paused || !this.onTimeline) {
+         let curr = this.video_in.currentTime*this.speed
+         this.timelineNob.style.right = `${curr}px`
+      }
       setTimeout(this.autoTimelineFlow,20) // esto dicta los fps
    }
 
-   manualTimelineFlow = (e) => {
+   manualTimelineFlow = async (e) => {
       if(!this.onTimeline) return
       this.video_in.pause()
-         
-      // recorrido desde que he comenzado a tocar hasta que he movido el dedo
+
       let x = this.x
       this.getPosition(e)
+      // recorrido desde que he comenzado a tocar hasta que he movido el dedo
       let increment = x - this.x
 
       let newPosition = Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2))+increment
       this.timelineNob.style.right = `${newPosition}px`
 
       // cambiar tiempo respecto a la posicion del timeline
-      let newMoment = (Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2)))/this.speed
-      this.video_in.currentTime = newMoment
+      let newMoment = Math.round(
+         (Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2)))/this.speed
+            *10) / 10
+      if(Math.round(this.video_in.currentTime*10) / 10 == newMoment) return
+      if(newMoment > this.duration) newMoment = newMoment - this.duration
+      if(newMoment < 0) newMoment = this.duration - newMoment
+
+      this.video_in.currentTime = newMoment 
    }
 
    computeFrame = () => {
