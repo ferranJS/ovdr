@@ -35,10 +35,6 @@
 				<i class="far fa-circle"></i>
 			</label>
 			<input id="modeGrab" type="radio" name="mode" (click)="mode = 'grab'">
-			<!-- <input id="modeBorrar" type="radio" name="mode" (click)="selectMode('borrar')">
-			<label for="modeBorrar" class="radio">
-				<i class="fa fa-eraser"></i>
-			</label> -->
 			<input id="videoRecord" type="checkbox" [(ngModel)]="recording">
 			<label for="videoRecord">
 				<i class="fa fa-compact-disc"></i>
@@ -50,9 +46,6 @@
 			<button id="clearBtn" (click)="clearCanvas()">
 				<i class="fa fa-trash"></i>
 			</button>
-			<!-- <button (click)="next()">
-				<i class="fa fa-arrow-right"></i>
-			</button> -->
 		</div>
 		<div id="video-controls">
 			<button id="pauseBtn" (click)="video_in.paused ? video_in.play() : video_in.pause()">
@@ -78,8 +71,3 @@
 		</div>
 	</div>
 </ion-content>
-	<!-- <script>
-		document.addEventListener("DOMContentLoaded", () => {
-			init()
-		})
-	</script> -->
