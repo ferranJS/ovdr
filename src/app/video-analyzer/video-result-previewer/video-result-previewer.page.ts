@@ -2,8 +2,6 @@ import { HttpClient, HttpEventType } from '@angular/common/http';
 import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { VideoService } from 'src/app/services/video.service';
-import { Capacitor } from '@capacitor/core';
 import { CapacitorVideoPlayer } from 'capacitor-video-player';
 @Component({
   selector: 'app-video-result-previewer',
@@ -18,7 +16,7 @@ export class VideoResultPreviewerPage implements AfterViewInit {
   downloadProgress: number = 0
   videoPlayer: any
 
-  constructor(private modalController: ModalController, private http: HttpClient, private videoService: VideoService) { }
+  constructor(private modalController: ModalController, private http: HttpClient) { }
 
   async ngAfterViewInit() {
     this.video_result = document.getElementById('video_result')
@@ -34,17 +32,6 @@ export class VideoResultPreviewerPage implements AfterViewInit {
 
   cancel() {
     this.modalController.dismiss(true)
-  }
-
-  async playVideo(video) {
-    const base64data = await this.videoService.getVideoUrl(video)
-
-    await this.videoPlayer.initPlayer({
-      mode: 'fullscreen',
-      url: base64data,
-      playerId: 'fullscreen',
-      componentTag: 'app-video-result-previewer'
-    })
   }
  
   shareVideo = () => {
