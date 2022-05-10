@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.zaax.video_analyzer_ios',
+  appId: 'com.zaaxapp.zaax',
   appName: 'zaax-video-analyzer',
   webDir: 'www',
   bundledWebRuntime: false
