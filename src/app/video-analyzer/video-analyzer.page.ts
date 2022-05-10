@@ -219,11 +219,15 @@ export class VideoAnalyzerPage {
       this.canvasContainer.setAttribute('height', this.canvas_height) // *2
 
       this.timelineNob.addEventListener('touchstart', (e:any) => {
+         this.momentum = 0
          this.onTimeline = true
          this.getPosition(e)
       })
-      this.timelineNob.addEventListener('touchend', _=> this.onTimeline = false )
       this.timelineNob.addEventListener('touchmove', this.manualTimelineFlow)
+      this.timelineNob.addEventListener('touchend', () => {
+         this.applyMomentum(this.momentum/10,10)
+         this.onTimeline = false
+      })
 
       this.changeThickness(null)
       this.ctx_tmp.strokeStyle = this.colorPicker.value
@@ -235,6 +239,21 @@ export class VideoAnalyzerPage {
       this.speed = 150
 
       this.autoTimelineFlow()
+   }
+
+   momentum = 0
+// no está bien hecha  :(  pero casi
+   applyMomentum = (momentum:number,i:number) => {
+      console.log("momentum: ", momentum);
+      let newPosition = Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2))+momentum;
+      this.timelineNob.style.right = `${newPosition}px`
+      // cambiar tiempo respecto a la posicion del timeline
+
+      let newMoment = Math.round( newPosition/this.speed * 100) / 100;
+      
+      this.video_in.currentTime = newMoment 
+      if(i==0) return
+      setTimeout(()=>this.applyMomentum(momentum*0.8,--i), 25)
    }
 
    autoTimelineFlow = () => {
@@ -256,12 +275,17 @@ export class VideoAnalyzerPage {
 
       let newPosition = Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2))+increment
       this.timelineNob.style.right = `${newPosition}px`
+      console.log("this.momentum: ", this.momentum);
+      console.log("increment: ", increment);
+      if((this.momentum<=0 && increment<=0) || (this.momentum>=0 && increment>=0))
+         this.momentum += increment
+      else 
+         this.momentum = 0
 
       // cambiar tiempo respecto a la posicion del timeline
-      let newMoment = Math.round(
-         (Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2)))/this.speed
-            *10) / 10
-      if(Math.round(this.video_in.currentTime*10) / 10 == newMoment) return
+      let newMoment = Math.round( newPosition/this.speed * 100) / 100;
+
+      if(Math.round(this.video_in.currentTime*100) / 100 == newMoment) return
       if(newMoment > this.duration) newMoment = newMoment - this.duration
       if(newMoment < 0) newMoment = this.duration - newMoment
 
