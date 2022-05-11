@@ -2,11 +2,9 @@ ion-content {
     --overflow: hidden;
 }
 
-video {
-    visibility: hidden; // quizás en ios haya q ponerlo visible y luego ocultarlo
-    z-index: -50;
-    top: 50%;
-    transform: translateY(-50%);
+#video_in {
+    opacity: 0;  // quizás en ios haya q ponerlo visible y luego ocultarlo
+    z-index: -50 !important;
 }
 
 canvas {

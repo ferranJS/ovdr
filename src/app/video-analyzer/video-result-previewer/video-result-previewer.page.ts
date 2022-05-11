@@ -1,5 +1,5 @@
 import { HttpClient, HttpEventType } from '@angular/common/http';
-import { Component, Input, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 @Component({
@@ -7,24 +7,26 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
   templateUrl: './video-result-previewer.page.html',
   styleUrls: ['./video-result-previewer.page.scss'],
 })
-export class VideoResultPreviewerPage implements OnInit {
+export class VideoResultPreviewerPage implements AfterViewInit {
 
   @Input() src: string
   video_result: any
-
+  videos: any
   downloadProgress: number = 0
 
   constructor(private modalController: ModalController, private http: HttpClient) { }
 
-  ngOnInit() {
+  async ngAfterViewInit() {
     this.video_result = document.getElementById('video_result')
     this.video_result['src'] = this.src
+    console.log("this.video_result['src']: ", this.video_result['src']);
+    // this.videos = await this.videoService.loadVideos()    
   }
 
   cancel() {
     this.modalController.dismiss(true)
   }
-
+ 
   shareVideo = () => {
 
   }

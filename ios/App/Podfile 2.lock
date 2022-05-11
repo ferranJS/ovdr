@@ -1,0 +1,64 @@
+PODS:
+  - Capacitor (3.5.0):
+    - CapacitorCordova
+  - CapacitorApp (1.1.1):
+    - Capacitor
+  - CapacitorCordova (3.5.0)
+  - CapacitorFilesystem (1.1.0):
+    - Capacitor
+  - CapacitorKeyboard (1.2.2):
+    - Capacitor
+  - CapacitorStatusBar (1.0.8):
+    - Capacitor
+  - CapacitorStorage (1.2.5):
+    - Capacitor
+  - CapacitorVideoPlayer (3.4.2):
+    - Capacitor
+  - CapacitorVoiceRecorder (2.1.0):
+    - Capacitor
+
+DEPENDENCIES:
+  - "Capacitor (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
+  - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorFilesystem (from `../../node_modules/@capacitor/filesystem`)"
+  - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
+  - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
+  - "CapacitorStorage (from `../../node_modules/@capacitor/storage`)"
+  - CapacitorVideoPlayer (from `../../node_modules/capacitor-video-player`)
+  - CapacitorVoiceRecorder (from `../../node_modules/capacitor-voice-recorder`)
+
+EXTERNAL SOURCES:
+  Capacitor:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorApp:
+    :path: "../../node_modules/@capacitor/app"
+  CapacitorCordova:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorFilesystem:
+    :path: "../../node_modules/@capacitor/filesystem"
+  CapacitorKeyboard:
+    :path: "../../node_modules/@capacitor/keyboard"
+  CapacitorStatusBar:
+    :path: "../../node_modules/@capacitor/status-bar"
+  CapacitorStorage:
+    :path: "../../node_modules/@capacitor/storage"
+  CapacitorVideoPlayer:
+    :path: "../../node_modules/capacitor-video-player"
+  CapacitorVoiceRecorder:
+    :path: "../../node_modules/capacitor-voice-recorder"
+
+SPEC CHECKSUMS:
+  Capacitor: f19b782e4ca1861bd360b6c1ccf6981b0c399fe9
+  CapacitorApp: 6539a37b671391147dd0180e1483c051077254bf
+  CapacitorCordova: 77bc39f20e91cce681a579b2fd728f2d8ef8c93c
+  CapacitorFilesystem: 47738a7110f2eb8629054217d8d6027d9ffd4e5b
+  CapacitorKeyboard: 2d8c03dfc9e15c459ec50ecb28c0cc7fe7acddac
+  CapacitorStatusBar: 2f4da63c505cfdecdbff4d4345dac24c11e7f699
+  CapacitorStorage: 63255170c2f7e9f7363b3e5e015584e6d18f2969
+  CapacitorVideoPlayer: 6b8e8016d7fa38469364f0c2d250be60790fca47
+  CapacitorVoiceRecorder: 0971cc6658ebfdd73755042b14ae29ea05883bae
+
+PODFILE CHECKSUM: 2c201b41f70f464ec80b357828f7ccc9b966a5df
+
+COCOAPODS: 1.11.3
