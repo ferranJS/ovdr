@@ -22,7 +22,7 @@ export class VideoAnalyzerPage {
    mode: string
    video_in: any
    c_out: any
-   ctx_out: CanvasRenderingContext2D
+   ctx_out: any
    c_tmp: any
    ctx_tmp: any
    c_nodes: any
@@ -127,14 +127,52 @@ export class VideoAnalyzerPage {
       let devices = navigator.mediaDevices
       console.log("navigator: ", navigator);
       console.log("devices: ", !devices?'no devices':devices)
+      // devices.enumerateDevices().then(devices => {
+      //    devices.forEach(device => { console.log(device.kind.toUpperCase(), device.label) })
+      // }).catch(err => { console.log(err.name, err.message. err) })
+      // console.log(MediaRecorder.isTypeSupported('video/webm;codecs=h264'))
+      
+      const audioStream = await devices.getUserMedia({
+         audio: true,
+         video: false
+      })
       const canvasStream = this.c_out.captureStream(40 /*fps*/)
+      const combinedStream = new MediaStream([
+         ...audioStream.getAudioTracks(), ...canvasStream.getVideoTracks()
+      ])
+      // this.video_out.srcObject = combinedStream // (se va pasando el objeto)
+      // video/webm
+      // video/webm;codecs=vp8
+      // video/webm;codecs=vp9
+      // video/webm;codecs=vp8.0
+      // video/webm;codecs=vp9.0
+      // video/webm;codecs=h264
+      // video/webm;codecs=H264
+      // video/webm;codecs=avc1
+      // video/webm;codecs=vp8,opus
+      // video/WEBM;codecs=VP8,OPUS
+      // video/webm;codecs=vp9,opus
+      // video/webm;codecs=vp8,vp9,opus
+      // video/webm;codecs=h264,opus
+      // video/webm;codecs=h264,vp9,opus
+      // video/x-matroska;codecs=avc1
+            // bits_per_second = 16000000 for 2K video,
+      // bits_per_second = 8000000 for 1080p video,
+      // bits_per_second = 5000000 for 720p video,
+      // bits_per_second = 2500000 for 480p video,
+      // bits_per_second = 1000000 for 360p video
       const options = { 
-         audioBitsPerSecond: 128000,
-         videoBitsPerSecond: 2500000,
-         mimeType: 'video/mp4' 
+         bitsPerSecond: 812800000,  //Clamping calculated audio bitrate (800000bps) to the maximum (128000bps)
+         audioBitsPerSecond: 128000, // A EDITAR!
+         videoBitsPerSecond: 800000000,
+         mimeType: 'video/webm; codecs=vp9' 
       } // codecs=vp9
       
-      this.mediaRecorder = new MediaRecorder(canvasStream, options)
+      this.mediaRecorder = new MediaRecorder(combinedStream, options)
+      // this.mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+      // this.mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+      // this.mediaRecorder.setAudioSamplingRate(44100);
+      // this.mediaRecorder.setAudioEncodingBitRate(256000);
       let chunks = []
 
       this.mediaRecorder.ondataavailable = async (ev: any) => {
@@ -144,12 +182,12 @@ export class VideoAnalyzerPage {
       // https://gist.github.com/AVGP/4c2ce4ab3c67760a0f30a9d54544a060
       // https://www.npmjs.com/package/webm-to-mp4
       // ffmpeg -i input.webm -preset superfast output.mp4 !!! seguramente lo mejor
-      this.mediaRecorder.onstop = async (ev) => {
-         const blob = new Blob(chunks, { 'type': 'video/mp4' })
-         // await this.videoService.storeVideo(blob)
-         const src =   window.URL.createObjectURL(blob)
+      this.mediaRecorder.onstop = (ev) => {
+         const blob = new Blob(chunks, { 'type': 'video/webm; codecs=vp9' })
+         const src = window.URL.createObjectURL(blob)
          // que pase al vídeo resultado !!!
          this.openVideoResultModal(src)
+         // this.video_in.className = "hidden_video"
       }
       this.mediaRecorder.start()
    }
@@ -179,7 +217,6 @@ export class VideoAnalyzerPage {
    }
 
    prepareCanvas = () => {
-
       // FULL SCREEN WIDTH Y ALTURA PROPORCIONAL      
       this.video_in.currentTime = 1000
       this.video_in.play().then(()=>{
@@ -191,9 +228,9 @@ export class VideoAnalyzerPage {
       })
 
       this.canvas_height = (this.video_in.videoHeight/this.video_in.videoWidth)*window.innerWidth
-      console.log("canvas_height: ", this.canvas_height);
       this.video_in.removeEventListener('play', this.prepareCanvas)
       this.video_in.muted = true  //hay q hacerlo manual xq en html no va
+
       this.c_out.setAttribute('width', window.innerWidth) // *2
       this.c_out.setAttribute('height', this.canvas_height) // *2
 
@@ -261,7 +298,7 @@ export class VideoAnalyzerPage {
       this.ctx_out.drawImage(this.video_in, 0, 0, window.innerWidth, this.canvas_height)
       this.ctx_out.drawImage(this.c_tmp, 0, 0)
       this.ctx_out.drawImage(this.c_nodes, 0, 0)
-      setTimeout(this.computeFrame, 10)
+      setTimeout(this.computeFrame, 0)
    }
 
    startCircle = (e) => {
@@ -455,6 +492,41 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.lineTo(this.x, this.y)
       this.ctx_tmp.stroke()
    }
+
+   // erase(e) {
+   //     getPosition(e)
+   //     last().some((path,i) => {   // con líneas va bastante bien ! rayas no xD desabilitao
+   //        if(path.type=="line") {
+   //             var xDist = x - path.points[0].x;
+   //             var yDist = y - path.points[0].y;
+   //             var dist = parseInt(Math.sqrt(xDist * xDist + yDist * yDist));
+   //             var xDist_ = x - path.points[1].x;
+   //             var yDist_ = y - path.points[1].y;
+   //             var dist_ = parseInt(Math.sqrt(xDist_ * xDist_ + yDist_ * yDist_));
+
+   //             var xDist__ = path.points[0].x - path.points[1].x;
+   //             var yDist__ = path.points[0].y - path.points[1].y;
+   //             var dist__ = parseInt(Math.sqrt(xDist__ * xDist__ + yDist__ * yDist__));
+   //             if(dist__ == dist+dist_) {
+   //                 log.push([])
+   //                 fillLastLog()
+   //                 last().splice(i,1)
+   //                 return true
+   //             }
+   //         } else if(path.type=="raya") {
+   //             path.points.forEach(punto=>{
+   //                 if(punto.x=x && punto.y==y){
+   //                     log.push([])
+   //                     fillLastLog()
+   //                     last().splice(i,1)
+   //                     return true
+   //                 }
+   //             })
+   //         }
+   //     })
+   //     drawPaths()
+   //     drawNodes()
+   // }
 
    drawPaths = () => {
       this.ctx_tmp.clearRect(0, 0, this.c_tmp.width, this.c_tmp.height)
@@ -699,4 +771,13 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.clearRect(0, 0, this.c_tmp.width, this.c_tmp.height)
       this.log.push([])
    }
+
+   // next = () => {
+   //    if (this.video_in.className == "hidden_video") { // && this.video_out.className == "hidden_video"
+   //       this.video_in.className = "video"
+   //    } else if (this.video_in.className == "video") {
+   //       this.video_in.className = "hidden_video"
+   //    } else {
+   //    }
+   // }   
 }
