@@ -187,7 +187,6 @@ export class VideoAnalyzerPage {
          if (hasCanceled) {
             this.clearCanvas()
             this.log = [[]]
-            // console.log(this.points, this.log, this.grabedNodes, this.x,this.y, this.x0, this.y0)
          }
       })
    }
@@ -220,10 +219,14 @@ export class VideoAnalyzerPage {
       this.canvasContainer.setAttribute('height', this.canvas_height) // *2
 
       this.timelineNob.addEventListener('touchstart', (e:any) => {
+         this.momentum = 0
          this.onTimeline = true
          this.getPosition(e)
       })
-      this.timelineNob.ontouchend = this.timelineNob.onmouseup = (_=> this.onTimeline = false )
+      this.timelineNob.ontouchend = this.timelineNob.onmouseup = (() => {
+         this.applyMomentum(this.momentum/10,10)
+         this.onTimeline = false
+      })
       this.timelineNob.ontouchmove = this.timelineNob.onmousemove = this.manualTimelineFlow
 
       this.changeThickness(null)
@@ -236,6 +239,21 @@ export class VideoAnalyzerPage {
       this.speed = 150
 
       this.autoTimelineFlow()
+   }
+
+   momentum = 0
+// no está bien hecha  :(  pero casi
+   applyMomentum = (momentum:number,i:number) => {
+      console.log("momentum: ", momentum);
+      let newPosition = Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2))+momentum;
+      this.timelineNob.style.right = `${newPosition}px`
+      // cambiar tiempo respecto a la posicion del timeline
+
+      let newMoment = Math.round( newPosition/this.speed * 100) / 100;
+      
+      this.video_in.currentTime = newMoment 
+      if(i==0) return
+      setTimeout(()=>this.applyMomentum(momentum*0.8,--i), 25)
    }
 
    autoTimelineFlow = () => {
@@ -257,12 +275,17 @@ export class VideoAnalyzerPage {
 
       let newPosition = Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2))+increment
       this.timelineNob.style.right = `${newPosition}px`
+      console.log("this.momentum: ", this.momentum);
+      console.log("increment: ", increment);
+      if((this.momentum<=0 && increment<=0) || (this.momentum>=0 && increment>=0))
+         this.momentum += increment
+      else 
+         this.momentum = 0
 
       // cambiar tiempo respecto a la posicion del timeline
-      let newMoment = Math.round(
-         (Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2)))/this.speed
-            *10) / 10
-      if(Math.round(this.video_in.currentTime*10) / 10 == newMoment) return
+      let newMoment = Math.round( newPosition/this.speed * 100) / 100;
+
+      if(Math.round(this.video_in.currentTime*100) / 100 == newMoment) return
       if(newMoment > this.duration) newMoment = newMoment - this.duration
       if(newMoment < 0) newMoment = this.duration - newMoment
 
@@ -337,7 +360,6 @@ export class VideoAnalyzerPage {
       this.getPosition(e)
       this.last().some((path, i) => {
          if (path.type != "line") return //no interactuar consigo misma
-         // if(path.type!="line" || (mode == "grab" && grabedNodes.some(node => node.i == i || (node.i != i && ((path.points[0].x == last()[node.i].points[node.j].x && path.points[0].y == last()[node.i].points[node.j].y) || (path.points[1].x == last()[node.i].points[node.j].x && path.points[1].y == last()[node.i].points[node.j].y)) )))) return //no interactuar consigo misma
 
          if (this.overNode(path.points[0])) {
             [this.x0, this.y0] = [path.points[0].x, path.points[0].y]
@@ -414,8 +436,6 @@ export class VideoAnalyzerPage {
                   // conectar con un nodo!
                   this.last().some((path) => {
                      if (path.type != "line") return //no interactuar consigo misma
-                     // if(path.type!="line" || (mode == "grab" && grabedNodes.some(node => node.i == i || (node.i != i && ((path.points[0].x == last()[node.i].points[node.j].x && path.points[0].y == last()[node.i].points[node.j].y) || (path.points[1].x == last()[node.i].points[node.j].x && path.points[1].y == last()[node.i].points[node.j].y)) )))) return //no interactuar consigo misma
-
                      if (this.overNode(path.points[0])) {
                         [p_x, p_y] = [path.points[0].x, path.points[0].y]; return true
                      } else if (this.overNode(path.points[1])) {
@@ -439,8 +459,6 @@ export class VideoAnalyzerPage {
                   this.midpoint(this.x0, this.y0, this.x, this.y)
                   this.last().push({ point: this.midpoint(this.x0, this.y0, this.x, this.y), radius: this.radius(this.x0, this.y0, this.x, this.y), type: "circle", color: this.colorPicker.value, thickness: this.slider.value })
                }
-               // else if(mode == "borrar")
-               // console.log(log)
             }
          }
       } catch (e) { console.log(e) }
