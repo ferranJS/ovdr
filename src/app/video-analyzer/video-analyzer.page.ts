@@ -219,12 +219,13 @@ export class VideoAnalyzerPage {
       this.canvasContainer.setAttribute('height', this.canvas_height) // *2
 
       this.timelineNob.addEventListener('touchstart', (e:any) => {
-         this.momentum = 0
+         this.momentum = []
          this.onTimeline = true
          this.getPosition(e)
       })
       this.timelineNob.ontouchend = this.timelineNob.onmouseup = (() => {
-         this.applyMomentum(this.momentum/10,10)
+         this.applyMomentum(this.momentum.length ? this.momentum.reduce((a,b)=> a*0.8+b)/5 : 0, 10)
+         console.log("this.momentum.reduce((a,b)=> a*0.8+b)/5: ", this.momentum.reduce((a,b)=> a*0.8+b)/5);
          this.onTimeline = false
       })
       this.timelineNob.ontouchmove = this.timelineNob.onmousemove = this.manualTimelineFlow
@@ -241,7 +242,7 @@ export class VideoAnalyzerPage {
       this.autoTimelineFlow()
    }
 
-   momentum = 0
+   momentum = []
 // no está bien hecha  :(  pero casi
    applyMomentum = (momentum:number,i:number) => {
       console.log("momentum: ", momentum);
@@ -253,7 +254,7 @@ export class VideoAnalyzerPage {
       
       this.video_in.currentTime = newMoment 
       if(i==0) return
-      setTimeout(()=>this.applyMomentum(momentum*0.9,--i), 25)
+      setTimeout(()=>this.applyMomentum(momentum*0.9,--i), 23)
    }
 
    autoTimelineFlow = () => {
@@ -261,7 +262,7 @@ export class VideoAnalyzerPage {
          let curr = this.video_in.currentTime*this.speed
          this.timelineNob.style.right = `${curr}px`
       }
-      setTimeout(this.autoTimelineFlow,20) // esto dicta los fps
+      setTimeout(this.autoTimelineFlow,23) // esto dicta los fps
    }
 
    manualTimelineFlow = async (e) => {
@@ -277,10 +278,11 @@ export class VideoAnalyzerPage {
       this.timelineNob.style.right = `${newPosition}px`
       console.log("this.momentum: ", this.momentum);
       console.log("increment: ", increment);
-      if((this.momentum<=0 && increment<=0) || (this.momentum>=0 && increment>=0))
-         this.momentum += increment
+      let sum = this.momentum.length ? this.momentum.reduce((a,b)=>a+b)/10 : 0
+      if((sum<=0 && increment<=0) || (sum>=0 && increment>=0))
+         this.momentum.push(increment)
       else 
-         this.momentum = 0
+         this.momentum = []
 
       // cambiar tiempo respecto a la posicion del timeline
       let newMoment = Math.round( newPosition/this.speed * 100) / 100;
