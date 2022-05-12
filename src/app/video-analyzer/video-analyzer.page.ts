@@ -253,7 +253,7 @@ export class VideoAnalyzerPage {
       
       this.video_in.currentTime = newMoment 
       if(i==0) return
-      setTimeout(()=>this.applyMomentum(momentum*0.8,--i), 25)
+      setTimeout(()=>this.applyMomentum(momentum*0.9,--i), 25)
    }
 
    autoTimelineFlow = () => {
