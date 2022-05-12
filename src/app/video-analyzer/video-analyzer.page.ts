@@ -92,16 +92,16 @@ export class VideoAnalyzerPage {
       this.btnErase = document.getElementById('modeErase')
       this.btnRecord = document.getElementById('videoRecord')
 
-      this.canvasContainer.addEventListener('touchstart', this.startAction)
-      this.canvasContainer.addEventListener('touchleave', this.stopAction)
-      this.canvasContainer.addEventListener('touchcancel', this.stopAction)
-      this.canvasContainer.addEventListener('touchend', this.stopAction)
-      this.canvasContainer.addEventListener('touchmove', this.sketch)
+      this.canvasContainer.ontouchstart = this.startAction
+      this.canvasContainer.ontouchleave = this.stopAction
+      this.canvasContainer.ontouchcance = this.stopAction
+      this.canvasContainer.ontouchend = this.stopAction
+      this.canvasContainer.ontouchmove = this.sketch
 
-      this.canvasContainer.addEventListener('mousedown', this.startAction)
-      this.canvasContainer.addEventListener('mouseup', this.stopAction)
-      this.canvasContainer.addEventListener('mouseleave', this.stopAction)
-      this.canvasContainer.addEventListener('mousemove', this.sketch)
+      this.canvasContainer.onmousedown = this.startAction
+      this.canvasContainer.onmouseup = this.stopAction
+      this.canvasContainer.onmouseleave = this.stopAction
+      this.canvasContainer.onmousemove = this.sketch
 
       this.timelineNob = document.getElementById('timelineNob')
 
@@ -141,6 +141,7 @@ export class VideoAnalyzerPage {
       const combinedStream = new MediaStream([
          ...audioStream.getAudioTracks(), ...canvasStream.getVideoTracks()
       ])
+      
       const options = { 
          bitsPerSecond: 812800000,  //Clamping calculated audio bitrate (800000bps) to the maximum (128000bps)
          audioBitsPerSecond: 128000, // A EDITAR!
@@ -186,7 +187,6 @@ export class VideoAnalyzerPage {
          if (hasCanceled) {
             this.clearCanvas()
             this.log = [[]]
-            // console.log(this.points, this.log, this.grabedNodes, this.x,this.y, this.x0, this.y0)
          }
       })
    }
@@ -219,11 +219,16 @@ export class VideoAnalyzerPage {
       this.canvasContainer.setAttribute('height', this.canvas_height) // *2
 
       this.timelineNob.addEventListener('touchstart', (e:any) => {
+         this.momentum = []
          this.onTimeline = true
          this.getPosition(e)
       })
-      this.timelineNob.addEventListener('touchend', _=> this.onTimeline = false )
-      this.timelineNob.addEventListener('touchmove', this.manualTimelineFlow)
+      this.timelineNob.ontouchend = this.timelineNob.onmouseup = (() => {
+         this.applyMomentum(this.momentum.length ? this.momentum.reduce((a,b)=> a*0.8+b)/5 : 0, 10)
+         console.log("this.momentum.reduce((a,b)=> a*0.8+b)/5: ", this.momentum.reduce((a,b)=> a*0.8+b)/5);
+         this.onTimeline = false
+      })
+      this.timelineNob.ontouchmove = this.timelineNob.onmousemove = this.manualTimelineFlow
 
       this.changeThickness(null)
       this.ctx_tmp.strokeStyle = this.colorPicker.value
@@ -237,12 +242,27 @@ export class VideoAnalyzerPage {
       this.autoTimelineFlow()
    }
 
+   momentum = []
+// no está bien hecha  :(  pero casi
+   applyMomentum = (momentum:number,i:number) => {
+      console.log("momentum: ", momentum);
+      let newPosition = Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2))+momentum;
+      this.timelineNob.style.right = `${newPosition}px`
+      // cambiar tiempo respecto a la posicion del timeline
+
+      let newMoment = Math.round( newPosition/this.speed * 100) / 100;
+      
+      this.video_in.currentTime = newMoment 
+      if(i==0) return
+      setTimeout(()=>this.applyMomentum(momentum*0.9,--i), 23)
+   }
+
    autoTimelineFlow = () => {
       if(!this.video_in.paused || !this.onTimeline) {
          let curr = this.video_in.currentTime*this.speed
          this.timelineNob.style.right = `${curr}px`
       }
-      setTimeout(this.autoTimelineFlow,20) // esto dicta los fps
+      setTimeout(this.autoTimelineFlow,23) // esto dicta los fps
    }
 
    manualTimelineFlow = async (e) => {
@@ -256,12 +276,18 @@ export class VideoAnalyzerPage {
 
       let newPosition = Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2))+increment
       this.timelineNob.style.right = `${newPosition}px`
+      console.log("this.momentum: ", this.momentum);
+      console.log("increment: ", increment);
+      let sum = this.momentum.length ? this.momentum.reduce((a,b)=>a+b)/10 : 0
+      if((sum<=0 && increment<=0) || (sum>=0 && increment>=0))
+         this.momentum.push(increment)
+      else 
+         this.momentum = []
 
       // cambiar tiempo respecto a la posicion del timeline
-      let newMoment = Math.round(
-         (Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2)))/this.speed
-            *10) / 10
-      if(Math.round(this.video_in.currentTime*10) / 10 == newMoment) return
+      let newMoment = Math.round( newPosition/this.speed * 100) / 100;
+
+      if(Math.round(this.video_in.currentTime*100) / 100 == newMoment) return
       if(newMoment > this.duration) newMoment = newMoment - this.duration
       if(newMoment < 0) newMoment = this.duration - newMoment
 
@@ -271,8 +297,6 @@ export class VideoAnalyzerPage {
    computeFrame = () => {
       // if (video_in.paused || video_in.ended) { return  }
       this.ctx_out.drawImage(this.video_in, 0, 0, this.video_in.getBoundingClientRect().width, this.video_in.getBoundingClientRect().height)
-      console.log(" this.video_in.innerHeight: ",  this.video_in.innerHeight);
-      console.log("this.video_in.innerWidth: ", this.video_in.innerWidth);
       this.ctx_out.drawImage(this.c_tmp, 0, 0)
       this.ctx_out.drawImage(this.c_nodes, 0, 0)
       setTimeout(this.computeFrame, 0)
@@ -338,7 +362,6 @@ export class VideoAnalyzerPage {
       this.getPosition(e)
       this.last().some((path, i) => {
          if (path.type != "line") return //no interactuar consigo misma
-         // if(path.type!="line" || (mode == "grab" && grabedNodes.some(node => node.i == i || (node.i != i && ((path.points[0].x == last()[node.i].points[node.j].x && path.points[0].y == last()[node.i].points[node.j].y) || (path.points[1].x == last()[node.i].points[node.j].x && path.points[1].y == last()[node.i].points[node.j].y)) )))) return //no interactuar consigo misma
 
          if (this.overNode(path.points[0])) {
             [this.x0, this.y0] = [path.points[0].x, path.points[0].y]
@@ -374,9 +397,15 @@ export class VideoAnalyzerPage {
       this.drawNodes()
    }
 
-   startAction = (e: any) => {
-
-      if (this.last().length > 17 && this.mode != "grab") return
+  
+   startAction = (e) => {
+         //num máximo de elementos 
+         console.log("e: ", e);
+      if (e.targetTouches.length == 2 && e.changedTouches.length == 2) {
+         this.start_handler(e)
+         return
+      }
+      if (this.last().length > 27 && this.mode != "grab") return
       // var before = performance.now() 
       this.clicking = true
       this.x0 = this.x
@@ -409,8 +438,6 @@ export class VideoAnalyzerPage {
                   // conectar con un nodo!
                   this.last().some((path) => {
                      if (path.type != "line") return //no interactuar consigo misma
-                     // if(path.type!="line" || (mode == "grab" && grabedNodes.some(node => node.i == i || (node.i != i && ((path.points[0].x == last()[node.i].points[node.j].x && path.points[0].y == last()[node.i].points[node.j].y) || (path.points[1].x == last()[node.i].points[node.j].x && path.points[1].y == last()[node.i].points[node.j].y)) )))) return //no interactuar consigo misma
-
                      if (this.overNode(path.points[0])) {
                         [p_x, p_y] = [path.points[0].x, path.points[0].y]; return true
                      } else if (this.overNode(path.points[1])) {
@@ -434,8 +461,6 @@ export class VideoAnalyzerPage {
                   this.midpoint(this.x0, this.y0, this.x, this.y)
                   this.last().push({ point: this.midpoint(this.x0, this.y0, this.x, this.y), radius: this.radius(this.x0, this.y0, this.x, this.y), type: "circle", color: this.colorPicker.value, thickness: this.slider.value })
                }
-               // else if(mode == "borrar")
-               // console.log(log)
             }
          }
       } catch (e) { console.log(e) }
@@ -712,5 +737,92 @@ export class VideoAnalyzerPage {
       this.ctx_nodes.clearRect(0, 0, this.c_nodes.width, this.c_nodes.height)
       this.ctx_tmp.clearRect(0, 0, this.c_tmp.width, this.c_tmp.height)
       this.log.push([])
-   }
+   }  
+
+
+// // https://developer.mozilla.org/en-US/docs/Web/API/Touch_events/Multi-touch_interaction
+// // https://developer.mozilla.org/en-US/docs/Web/API/Touch_events/Multi-touch_interaction
+   
+// //  // Log events flaghttps://developer.mozilla.org/en-US/docs/Web/API/Touch_events/Multi-touch_interaction
+    logEvents = false
+    // Touch Point cache
+    tpCache = new Array()
+    private handle_pinch_zoom(e: any) {
+       // Check if the two target touches are the same ones that started the 2-touch
+       var point1 = -1, point2 = -1;
+       for (var i = 0; i < this.tpCache.length; i++) {
+          if (this.tpCache[i].identifier == e.targetTouches[0].identifier)
+             point1 = i;
+          if (this.tpCache[i].identifier == e.targetTouches[1].identifier)
+             point2 = i;
+       }
+       if (point1 >=0 && point2 >= 0) {
+          // Calculate the difference between the start and move coordinates
+          var diff1 = Math.abs(this.tpCache[point1].clientX - e.targetTouches[0].clientX);
+          var diff2 = Math.abs(this.tpCache[point2].clientX - e.targetTouches[1].clientX);
+     
+          // This threshold is device dependent as well as application specific
+          var PINCH_THRESHOLD = e.target.clientWidth / 10;
+          if (diff1 >= PINCH_THRESHOLD && diff2 >= PINCH_THRESHOLD)
+              e.target.style.background = "green";
+        }
+        else {
+          // empty tpCache
+          this.tpCache = new Array();
+        }
+    }
+ 
+    start_handler = (ev) => {
+       ev.preventDefault();
+       // Cache the touch points for later processing of 2-touch pinch/zoom
+       if (ev.targetTouches.length == 2) {
+         for (var i=0; i < ev.targetTouches.length; i++) {
+           this.tpCache.push(ev.targetTouches[i]);
+         }
+       }
+       if (this.logEvents) console.log("touchStart", ev, true);
+       this.update_background(ev);
+      }
+ 
+      move_handler = (ev) => {
+       ev.preventDefault();
+       if (this.logEvents) console.log("touchMove", ev, false);
+       // To avoid too much color flashing many touchmove events are started,
+       // don't update the background if two touch points are active
+       if (!(ev.touches.length == 2 && ev.targetTouches.length == 2))
+         this.update_background(ev);
+      
+       // Set the target element's border to dashed to give a clear visual
+       // indication the element received a move event.
+       ev.target.style.border = "dashed";
+      
+       // Check this event for 2-touch Move/Pinch/Zoom gesture
+       this.handle_pinch_zoom(ev);
+      }
+      
+      end_handler = (ev) => {
+       ev.preventDefault();
+       if (this.logEvents) console.log(ev.type, ev, false);
+       if (ev.targetTouches.length == 0) {
+         // Restore background and border to original values
+         ev.target.style.background = "white";
+         ev.target.style.border = "1px solid black";
+       }
+     }
+ 
+     update_background = (ev) => {
+       switch (ev.targetTouches.length) {
+         case 1:
+           // Single tap`
+           ev.target.style.background = "yellow";
+           break;
+         case 2:
+           // Two simultaneous touches
+           ev.target.style.background = "pink";
+           break;
+         default:
+           // More than two simultaneous touches
+           ev.target.style.background = "lightblue";
+       }
+      }
 }
