@@ -140,27 +140,7 @@ export class VideoAnalyzerPage {
       const combinedStream = new MediaStream([
          ...audioStream.getAudioTracks(), ...canvasStream.getVideoTracks()
       ])
-      // this.video_out.srcObject = combinedStream // (se va pasando el objeto)
-      // video/webm
-      // video/webm;codecs=vp8
-      // video/webm;codecs=vp9
-      // video/webm;codecs=vp8.0
-      // video/webm;codecs=vp9.0
-      // video/webm;codecs=h264
-      // video/webm;codecs=H264
-      // video/webm;codecs=avc1
-      // video/webm;codecs=vp8,opus
-      // video/WEBM;codecs=VP8,OPUS
-      // video/webm;codecs=vp9,opus
-      // video/webm;codecs=vp8,vp9,opus
-      // video/webm;codecs=h264,opus
-      // video/webm;codecs=h264,vp9,opus
-      // video/x-matroska;codecs=avc1
-            // bits_per_second = 16000000 for 2K video,
-      // bits_per_second = 8000000 for 1080p video,
-      // bits_per_second = 5000000 for 720p video,
-      // bits_per_second = 2500000 for 480p video,
-      // bits_per_second = 1000000 for 360p video
+
       const options = { 
          bitsPerSecond: 812800000,  //Clamping calculated audio bitrate (800000bps) to the maximum (128000bps)
          audioBitsPerSecond: 128000, // A EDITAR!
@@ -169,10 +149,6 @@ export class VideoAnalyzerPage {
       } // codecs=vp9
       
       this.mediaRecorder = new MediaRecorder(combinedStream, options)
-      // this.mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-      // this.mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-      // this.mediaRecorder.setAudioSamplingRate(44100);
-      // this.mediaRecorder.setAudioEncodingBitRate(256000);
       let chunks = []
 
       this.mediaRecorder.ondataavailable = async (ev: any) => {
@@ -213,7 +189,6 @@ export class VideoAnalyzerPage {
          if (hasCanceled) {
             this.clearCanvas()
             this.log = [[]]
-            // console.log(this.points, this.log, this.grabedNodes, this.x,this.y, this.x0, this.y0)
          }
       })
    }
@@ -246,11 +221,15 @@ export class VideoAnalyzerPage {
       this.canvasContainer.setAttribute('height', this.canvas_height) // *2
 
       this.timelineNob.addEventListener('touchstart', (e:any) => {
+         this.momentum = 0
          this.onTimeline = true
          this.getPosition(e)
       })
-      this.timelineNob.addEventListener('touchend', _=> this.onTimeline = false )
       this.timelineNob.addEventListener('touchmove', this.manualTimelineFlow)
+      this.timelineNob.addEventListener('touchend', () => {
+         this.applyMomentum(this.momentum/10,10)
+         this.onTimeline = false
+      })
 
       this.changeThickness(null)
       this.ctx_tmp.strokeStyle = this.colorPicker.value
@@ -262,6 +241,21 @@ export class VideoAnalyzerPage {
       this.speed = 150
 
       this.autoTimelineFlow()
+   }
+
+   momentum = 0
+// no está bien hecha  :(  pero casi
+   applyMomentum = (momentum:number,i:number) => {
+      console.log("momentum: ", momentum);
+      let newPosition = Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2))+momentum;
+      this.timelineNob.style.right = `${newPosition}px`
+      // cambiar tiempo respecto a la posicion del timeline
+
+      let newMoment = Math.round( newPosition/this.speed * 100) / 100;
+      
+      this.video_in.currentTime = newMoment 
+      if(i==0) return
+      setTimeout(()=>this.applyMomentum(momentum*0.8,--i), 25)
    }
 
    autoTimelineFlow = () => {
@@ -283,12 +277,17 @@ export class VideoAnalyzerPage {
 
       let newPosition = Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2))+increment
       this.timelineNob.style.right = `${newPosition}px`
+      console.log("this.momentum: ", this.momentum);
+      console.log("increment: ", increment);
+      if((this.momentum<=0 && increment<=0) || (this.momentum>=0 && increment>=0))
+         this.momentum += increment
+      else 
+         this.momentum = 0
 
       // cambiar tiempo respecto a la posicion del timeline
-      let newMoment = Math.round(
-         (Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2)))/this.speed
-            *10) / 10
-      if(Math.round(this.video_in.currentTime*10) / 10 == newMoment) return
+      let newMoment = Math.round( newPosition/this.speed * 100) / 100;
+
+      if(Math.round(this.video_in.currentTime*100) / 100 == newMoment) return
       if(newMoment > this.duration) newMoment = newMoment - this.duration
       if(newMoment < 0) newMoment = this.duration - newMoment
 
@@ -363,7 +362,6 @@ export class VideoAnalyzerPage {
       this.getPosition(e)
       this.last().some((path, i) => {
          if (path.type != "line") return //no interactuar consigo misma
-         // if(path.type!="line" || (mode == "grab" && grabedNodes.some(node => node.i == i || (node.i != i && ((path.points[0].x == last()[node.i].points[node.j].x && path.points[0].y == last()[node.i].points[node.j].y) || (path.points[1].x == last()[node.i].points[node.j].x && path.points[1].y == last()[node.i].points[node.j].y)) )))) return //no interactuar consigo misma
 
          if (this.overNode(path.points[0])) {
             [this.x0, this.y0] = [path.points[0].x, path.points[0].y]
@@ -434,8 +432,6 @@ export class VideoAnalyzerPage {
                   // conectar con un nodo!
                   this.last().some((path) => {
                      if (path.type != "line") return //no interactuar consigo misma
-                     // if(path.type!="line" || (mode == "grab" && grabedNodes.some(node => node.i == i || (node.i != i && ((path.points[0].x == last()[node.i].points[node.j].x && path.points[0].y == last()[node.i].points[node.j].y) || (path.points[1].x == last()[node.i].points[node.j].x && path.points[1].y == last()[node.i].points[node.j].y)) )))) return //no interactuar consigo misma
-
                      if (this.overNode(path.points[0])) {
                         [p_x, p_y] = [path.points[0].x, path.points[0].y]; return true
                      } else if (this.overNode(path.points[1])) {
@@ -459,8 +455,6 @@ export class VideoAnalyzerPage {
                   this.midpoint(this.x0, this.y0, this.x, this.y)
                   this.last().push({ point: this.midpoint(this.x0, this.y0, this.x, this.y), radius: this.radius(this.x0, this.y0, this.x, this.y), type: "circle", color: this.colorPicker.value, thickness: this.slider.value })
                }
-               // else if(mode == "borrar")
-               // console.log(log)
             }
          }
       } catch (e) { console.log(e) }
@@ -494,41 +488,6 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.lineTo(this.x, this.y)
       this.ctx_tmp.stroke()
    }
-
-   // erase(e) {
-   //     getPosition(e)
-   //     last().some((path,i) => {   // con líneas va bastante bien ! rayas no xD desabilitao
-   //        if(path.type=="line") {
-   //             var xDist = x - path.points[0].x;
-   //             var yDist = y - path.points[0].y;
-   //             var dist = parseInt(Math.sqrt(xDist * xDist + yDist * yDist));
-   //             var xDist_ = x - path.points[1].x;
-   //             var yDist_ = y - path.points[1].y;
-   //             var dist_ = parseInt(Math.sqrt(xDist_ * xDist_ + yDist_ * yDist_));
-
-   //             var xDist__ = path.points[0].x - path.points[1].x;
-   //             var yDist__ = path.points[0].y - path.points[1].y;
-   //             var dist__ = parseInt(Math.sqrt(xDist__ * xDist__ + yDist__ * yDist__));
-   //             if(dist__ == dist+dist_) {
-   //                 log.push([])
-   //                 fillLastLog()
-   //                 last().splice(i,1)
-   //                 return true
-   //             }
-   //         } else if(path.type=="raya") {
-   //             path.points.forEach(punto=>{
-   //                 if(punto.x=x && punto.y==y){
-   //                     log.push([])
-   //                     fillLastLog()
-   //                     last().splice(i,1)
-   //                     return true
-   //                 }
-   //             })
-   //         }
-   //     })
-   //     drawPaths()
-   //     drawNodes()
-   // }
 
    drawPaths = () => {
       this.ctx_tmp.clearRect(0, 0, this.c_tmp.width, this.c_tmp.height)
@@ -773,13 +732,4 @@ export class VideoAnalyzerPage {
       this.ctx_tmp.clearRect(0, 0, this.c_tmp.width, this.c_tmp.height)
       this.log.push([])
    }
-
-   // next = () => {
-   //    if (this.video_in.className == "hidden_video") { // && this.video_out.className == "hidden_video"
-   //       this.video_in.className = "video"
-   //    } else if (this.video_in.className == "video") {
-   //       this.video_in.className = "hidden_video"
-   //    } else {
-   //    }
-   // }   
 }
