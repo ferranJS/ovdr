@@ -92,16 +92,16 @@ export class VideoAnalyzerPage {
       this.btnErase = document.getElementById('modeErase')
       this.btnRecord = document.getElementById('videoRecord')
 
-      this.canvasContainer.addEventListener('touchstart', this.startAction)
-      this.canvasContainer.addEventListener('touchleave', this.stopAction)
-      this.canvasContainer.addEventListener('touchcancel', this.stopAction)
-      this.canvasContainer.addEventListener('touchend', this.stopAction)
-      this.canvasContainer.addEventListener('touchmove', this.sketch)
+      this.canvasContainer.ontouchstart = this.startAction
+      this.canvasContainer.ontouchleave = this.stopAction
+      this.canvasContainer.ontouchcance = this.stopAction
+      this.canvasContainer.ontouchend = this.stopAction
+      this.canvasContainer.ontouchmove = this.sketch
 
-      this.canvasContainer.addEventListener('mousedown', this.startAction)
-      this.canvasContainer.addEventListener('mouseup', this.stopAction)
-      this.canvasContainer.addEventListener('mouseleave', this.stopAction)
-      this.canvasContainer.addEventListener('mousemove', this.sketch)
+      this.canvasContainer.onmousedown = this.startAction
+      this.canvasContainer.onmouseup = this.stopAction
+      this.canvasContainer.onmouseleave = this.stopAction
+      this.canvasContainer.onmousemove = this.sketch
 
       this.timelineNob = document.getElementById('timelineNob')
 
@@ -140,7 +140,7 @@ export class VideoAnalyzerPage {
       const combinedStream = new MediaStream([
          ...audioStream.getAudioTracks(), ...canvasStream.getVideoTracks()
       ])
-
+      
       const options = { 
          bitsPerSecond: 812800000,  //Clamping calculated audio bitrate (800000bps) to the maximum (128000bps)
          audioBitsPerSecond: 128000, // A EDITAR!
@@ -223,11 +223,11 @@ export class VideoAnalyzerPage {
          this.onTimeline = true
          this.getPosition(e)
       })
-      this.timelineNob.addEventListener('touchmove', this.manualTimelineFlow)
-      this.timelineNob.addEventListener('touchend', () => {
+      this.timelineNob.ontouchend = this.timelineNob.onmouseup = (() => {
          this.applyMomentum(this.momentum/10,10)
          this.onTimeline = false
       })
+      this.timelineNob.ontouchmove = this.timelineNob.onmousemove = this.manualTimelineFlow
 
       this.changeThickness(null)
       this.ctx_tmp.strokeStyle = this.colorPicker.value
@@ -294,7 +294,7 @@ export class VideoAnalyzerPage {
 
    computeFrame = () => {
       // if (video_in.paused || video_in.ended) { return  }
-      this.ctx_out.drawImage(this.video_in, 0, 0, window.innerWidth, this.canvas_height)
+      this.ctx_out.drawImage(this.video_in, 0, 0, this.video_in.getBoundingClientRect().width, this.video_in.getBoundingClientRect().height)
       this.ctx_out.drawImage(this.c_tmp, 0, 0)
       this.ctx_out.drawImage(this.c_nodes, 0, 0)
       setTimeout(this.computeFrame, 0)
@@ -395,9 +395,15 @@ export class VideoAnalyzerPage {
       this.drawNodes()
    }
 
-   startAction = (e: any) => {
-
-      if (this.last().length > 17 && this.mode != "grab") return
+  
+   startAction = (e) => {
+         //num máximo de elementos 
+         console.log("e: ", e);
+      if (e.targetTouches.length == 2 && e.changedTouches.length == 2) {
+         this.start_handler(e)
+         return
+      }
+      if (this.last().length > 27 && this.mode != "grab") return
       // var before = performance.now() 
       this.clicking = true
       this.x0 = this.x
@@ -729,5 +735,92 @@ export class VideoAnalyzerPage {
       this.ctx_nodes.clearRect(0, 0, this.c_nodes.width, this.c_nodes.height)
       this.ctx_tmp.clearRect(0, 0, this.c_tmp.width, this.c_tmp.height)
       this.log.push([])
-   }
+   }  
+
+
+// // https://developer.mozilla.org/en-US/docs/Web/API/Touch_events/Multi-touch_interaction
+// // https://developer.mozilla.org/en-US/docs/Web/API/Touch_events/Multi-touch_interaction
+   
+// //  // Log events flaghttps://developer.mozilla.org/en-US/docs/Web/API/Touch_events/Multi-touch_interaction
+    logEvents = false
+    // Touch Point cache
+    tpCache = new Array()
+    private handle_pinch_zoom(e: any) {
+       // Check if the two target touches are the same ones that started the 2-touch
+       var point1 = -1, point2 = -1;
+       for (var i = 0; i < this.tpCache.length; i++) {
+          if (this.tpCache[i].identifier == e.targetTouches[0].identifier)
+             point1 = i;
+          if (this.tpCache[i].identifier == e.targetTouches[1].identifier)
+             point2 = i;
+       }
+       if (point1 >=0 && point2 >= 0) {
+          // Calculate the difference between the start and move coordinates
+          var diff1 = Math.abs(this.tpCache[point1].clientX - e.targetTouches[0].clientX);
+          var diff2 = Math.abs(this.tpCache[point2].clientX - e.targetTouches[1].clientX);
+     
+          // This threshold is device dependent as well as application specific
+          var PINCH_THRESHOLD = e.target.clientWidth / 10;
+          if (diff1 >= PINCH_THRESHOLD && diff2 >= PINCH_THRESHOLD)
+              e.target.style.background = "green";
+        }
+        else {
+          // empty tpCache
+          this.tpCache = new Array();
+        }
+    }
+ 
+    start_handler = (ev) => {
+       ev.preventDefault();
+       // Cache the touch points for later processing of 2-touch pinch/zoom
+       if (ev.targetTouches.length == 2) {
+         for (var i=0; i < ev.targetTouches.length; i++) {
+           this.tpCache.push(ev.targetTouches[i]);
+         }
+       }
+       if (this.logEvents) console.log("touchStart", ev, true);
+       this.update_background(ev);
+      }
+ 
+      move_handler = (ev) => {
+       ev.preventDefault();
+       if (this.logEvents) console.log("touchMove", ev, false);
+       // To avoid too much color flashing many touchmove events are started,
+       // don't update the background if two touch points are active
+       if (!(ev.touches.length == 2 && ev.targetTouches.length == 2))
+         this.update_background(ev);
+      
+       // Set the target element's border to dashed to give a clear visual
+       // indication the element received a move event.
+       ev.target.style.border = "dashed";
+      
+       // Check this event for 2-touch Move/Pinch/Zoom gesture
+       this.handle_pinch_zoom(ev);
+      }
+      
+      end_handler = (ev) => {
+       ev.preventDefault();
+       if (this.logEvents) console.log(ev.type, ev, false);
+       if (ev.targetTouches.length == 0) {
+         // Restore background and border to original values
+         ev.target.style.background = "white";
+         ev.target.style.border = "1px solid black";
+       }
+     }
+ 
+     update_background = (ev) => {
+       switch (ev.targetTouches.length) {
+         case 1:
+           // Single tap`
+           ev.target.style.background = "yellow";
+           break;
+         case 2:
+           // Two simultaneous touches
+           ev.target.style.background = "pink";
+           break;
+         default:
+           // More than two simultaneous touches
+           ev.target.style.background = "lightblue";
+       }
+      }
 }
