@@ -19,6 +19,8 @@ npm-debug.log*
 *.mp4
 
 /.angular
+/android
+/ios
 /.idea
 /.ionic
 /.sass-cache
