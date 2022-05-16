@@ -17,7 +17,7 @@ export class VideoSelectorPage implements OnInit {
   uploadFile = (e) => {
     let videoObject:any = document.getElementById('uploadFile')
     // crea url del vídeo porque no se puede acceder desde el html
-    let url = window.URL.createObjectURL(videoObject.files[0])
+    let url = window.URL.createObjectURL(videoObject.files[0])  // solo me funcionaba de esta forma
     this.router.navigate(['video-analyzer'], {queryParams: {src: url}})
  }
 
