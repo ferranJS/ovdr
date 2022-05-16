@@ -158,11 +158,9 @@ export class VideoAnalyzerPage {
       // https://gist.github.com/AVGP/4c2ce4ab3c67760a0f30a9d54544a060
       // https://www.npmjs.com/package/webm-to-mp4
       // ffmpeg -i input.webm -preset superfast output.mp4 !!! seguramente lo mejor
-      // INVESTIGAR: https://github.com/spite/ccapture.js/
-      // https://www.npmjs.com/package/ts-ebml
       this.mediaRecorder.onstop = (ev) => {
-         const blob = new Blob(chunks, { 'type': 'video/webm;' })
-         const src =   window.URL.createObjectURL(blob)
+         const blob = new Blob(chunks, { 'type': 'video/webm; codecs=vp9' })
+         const src = window.URL.createObjectURL(blob)
          // que pase al vídeo resultado !!!
          this.openVideoResultModal(src)
          // this.video_in.className = "hidden_video"
@@ -399,11 +397,14 @@ export class VideoAnalyzerPage {
       this.drawNodes()
    }
 
-   touches = []
+  
    startAction = (e) => {
-      //num máximo de elementos 
-      if(this.startMultiTouch(e)) return
-
+         //num máximo de elementos 
+         console.log("e: ", e);
+      if (e.targetTouches.length == 2 && e.changedTouches.length == 2) {
+         this.start_handler(e)
+         return
+      }
       if (this.last().length > 27 && this.mode != "grab") return
       // var before = performance.now() 
       this.clicking = true
@@ -424,12 +425,6 @@ export class VideoAnalyzerPage {
    }
 
    stopAction = (e: any) => {
-      if(this.touches.length > 1) {
-         setTimeout(_=>this.touches = [], 100)
-         this.drawNodes()
-         return
-      }
-      // this.end_handler(e)
       try {
          if (this.clicking) {
             if (this.hasDragged) {
@@ -479,12 +474,6 @@ export class VideoAnalyzerPage {
 
    // https://stackoverflow.com/questions/53960651/how-to-make-an-undo-function-in-canvas/53961111
    sketch = (e: any) => {
-      if(this.touches.length > 1) {
-         this.handleCanvasPos(e)
-         this.clicking = false
-         this.hasDragged = false
-         return
-      }
       if (!this.clicking) return
       this.hasDragged = true
       if (this.mode == "paint") this.paint(e)
@@ -606,6 +595,7 @@ export class VideoAnalyzerPage {
    }
 
    drawNodes = () => {
+      // setTimeout(() => {
       this.ctx_nodes.clearRect(0, 0, this.c_nodes.width, this.c_nodes.height)
       let pairs = []
       this.last().some((path, i) => {
@@ -751,54 +741,88 @@ export class VideoAnalyzerPage {
 
 
 // // https://developer.mozilla.org/en-US/docs/Web/API/Touch_events/Multi-touch_interaction
-
-   logEvents = false
-
+// // https://developer.mozilla.org/en-US/docs/Web/API/Touch_events/Multi-touch_interaction
+   
+// //  // Log events flaghttps://developer.mozilla.org/en-US/docs/Web/API/Touch_events/Multi-touch_interaction
+    logEvents = false
     // Touch Point cache
-   handleCanvasPos(e: any) {
-      if (this.touches[0]?.identifier == e.targetTouches[0]?.identifier)
-         var point1 = 0
-      if (this.touches[1]?.identifier == e.targetTouches[1]?.identifier)
-         var point2 = 1
-      if (point1 >=0 && point2 >= 0) {
-         // Calculate the difference between the start and move coordinates (la pos media entre los dos dedos)
-         var xDiff = (this.touches[point1].x + this.touches[point2].x)/2
-            - (e.targetTouches[0].clientX + e.targetTouches[1].clientX)/2
-         var yDiff = (this.touches[point1].y + this.touches[point2].y)/2
-            - (e.targetTouches[0].clientY + e.targetTouches[1].clientY)/2
-
-         // This threshold is device dependent as well as application specific
-         var PINCH_THRESHOLD = this.c_out.clientWidth / 150;
-         if (Math.abs(xDiff) >= PINCH_THRESHOLD && Math.abs(yDiff) >= PINCH_THRESHOLD) {
-            if(Math.abs(this.x+xDiff) < 10 && this.y+yDiff < 40 && this.y+yDiff > 25) {
-               this.c_out.style.right = "0px"
-               this.c_out.style.bottom = "40px"
-            } else {
-               this.c_out.style.right = this.x + xDiff + "px"
-               this.c_out.style.bottom = this.y +  yDiff + "px"
-            }
-         }
-      }
-   }
+    tpCache = new Array()
+    private handle_pinch_zoom(e: any) {
+       // Check if the two target touches are the same ones that started the 2-touch
+       var point1 = -1, point2 = -1;
+       for (var i = 0; i < this.tpCache.length; i++) {
+          if (this.tpCache[i].identifier == e.targetTouches[0].identifier)
+             point1 = i;
+          if (this.tpCache[i].identifier == e.targetTouches[1].identifier)
+             point2 = i;
+       }
+       if (point1 >=0 && point2 >= 0) {
+          // Calculate the difference between the start and move coordinates
+          var diff1 = Math.abs(this.tpCache[point1].clientX - e.targetTouches[0].clientX);
+          var diff2 = Math.abs(this.tpCache[point2].clientX - e.targetTouches[1].clientX);
+     
+          // This threshold is device dependent as well as application specific
+          var PINCH_THRESHOLD = e.target.clientWidth / 10;
+          if (diff1 >= PINCH_THRESHOLD && diff2 >= PINCH_THRESHOLD)
+              e.target.style.background = "green";
+        }
+        else {
+          // empty tpCache
+          this.tpCache = new Array();
+        }
+    }
  
-   startMultiTouch = (e) => {
-      this.x = Number(this.c_out.style.right.substring(0,this.c_out.style.right.length-2))
-      this.y = Number(this.c_out.style.bottom.substring(0,this.c_out.style.bottom.length-2))
-      if (e.targetTouches?.length == 2) {
-         this.hasDragged = false
-         this.clicking == false
-         this.touches.push({
-            x:e.targetTouches[0].clientX,
-            y:e.targetTouches[0].clientY,
-            identifier: e.targetTouches[0].identifier })
-         this.touches.push({
-            x:e.targetTouches[1].clientX,
-            y:e.targetTouches[1].clientY,
-            identifier: e.targetTouches[1].identifier
-         })
-         return true
+    start_handler = (ev) => {
+       ev.preventDefault();
+       // Cache the touch points for later processing of 2-touch pinch/zoom
+       if (ev.targetTouches.length == 2) {
+         for (var i=0; i < ev.targetTouches.length; i++) {
+           this.tpCache.push(ev.targetTouches[i]);
+         }
+       }
+       if (this.logEvents) console.log("touchStart", ev, true);
+       this.update_background(ev);
       }
-      return false
-   }
-
+ 
+      move_handler = (ev) => {
+       ev.preventDefault();
+       if (this.logEvents) console.log("touchMove", ev, false);
+       // To avoid too much color flashing many touchmove events are started,
+       // don't update the background if two touch points are active
+       if (!(ev.touches.length == 2 && ev.targetTouches.length == 2))
+         this.update_background(ev);
+      
+       // Set the target element's border to dashed to give a clear visual
+       // indication the element received a move event.
+       ev.target.style.border = "dashed";
+      
+       // Check this event for 2-touch Move/Pinch/Zoom gesture
+       this.handle_pinch_zoom(ev);
+      }
+      
+      end_handler = (ev) => {
+       ev.preventDefault();
+       if (this.logEvents) console.log(ev.type, ev, false);
+       if (ev.targetTouches.length == 0) {
+         // Restore background and border to original values
+         ev.target.style.background = "white";
+         ev.target.style.border = "1px solid black";
+       }
+     }
+ 
+     update_background = (ev) => {
+       switch (ev.targetTouches.length) {
+         case 1:
+           // Single tap`
+           ev.target.style.background = "yellow";
+           break;
+         case 2:
+           // Two simultaneous touches
+           ev.target.style.background = "pink";
+           break;
+         default:
+           // More than two simultaneous touches
+           ev.target.style.background = "lightblue";
+       }
+      }
 }

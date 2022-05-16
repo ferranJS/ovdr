@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">zaax-video-analyzer</string>
-    <string name="title_activity_main">zaax-video-analyzer</string>
-    <string name="package_name">com.zaax.video_analyzer</string>
-    <string name="custom_url_scheme">com.zaax.video_analyzer</string>
-</resources>

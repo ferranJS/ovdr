@@ -11,9 +11,8 @@ video {
 
 canvas {
     position: absolute;
-    bottom: 6vh;
-    right:0;
-    // transform: translateY(50%);
+    top: 50%;
+    transform: translateY(-50%);
     width: 100vw;
     height: auto;
 }
