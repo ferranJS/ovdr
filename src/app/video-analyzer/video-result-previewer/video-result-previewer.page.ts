@@ -20,7 +20,6 @@ export class VideoResultPreviewerPage implements AfterViewInit {
     this.video_result = document.getElementById('video_result')
     this.video_result['src'] = this.src
     console.log("this.video_result['src']: ", this.video_result['src']);
-    // this.videos = await this.videoService.loadVideos()    
   }
 
   cancel() {
