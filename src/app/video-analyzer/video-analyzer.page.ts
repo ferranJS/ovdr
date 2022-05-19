@@ -163,7 +163,6 @@ export class VideoAnalyzerPage {
          const src = window.URL.createObjectURL(blob)
          // que pase al vídeo resultado !!!
          this.openVideoResultModal(src)
-         // this.video_in.className = "hidden_video"
       }
       this.mediaRecorder.start()
    }
