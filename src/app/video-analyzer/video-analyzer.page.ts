@@ -226,7 +226,7 @@ export class VideoAnalyzerPage {
          this.getPosition(e)
       })
       this.timelineNob.ontouchend = this.timelineNob.onmouseup = (() => {
-         this.applyMomentum(this.momentum.length ? this.momentum.reduce((a,b)=> a*0.8+b)/5 : 0, 10)
+         this.applyMomentum(this.momentum.length ? this.momentum.reduce((a,b)=> a*0.8+b)/5 : 0)
          console.log("this.momentum.reduce((a,b)=> a*0.8+b)/5: ", this.momentum.reduce((a,b)=> a*0.8+b)/5);
          this.onTimeline = false
       })
@@ -246,8 +246,7 @@ export class VideoAnalyzerPage {
 
    momentum = []
 // no está bien hecha  :(  pero casi
-   applyMomentum = (momentum:number,i:number) => {
-      console.log("momentum: ", momentum);
+   applyMomentum = (momentum:number) => {
       let newPosition = Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2))+momentum;
       this.timelineNob.style.right = `${newPosition}px`
       // cambiar tiempo respecto a la posicion del timeline
@@ -255,8 +254,8 @@ export class VideoAnalyzerPage {
       let newMoment = Math.round( newPosition/this.speed * 100) / 100;
       
       this.video_in.currentTime = newMoment 
-      if(i==0) return
-      setTimeout(()=>this.applyMomentum(momentum*0.9,--i), 23)
+      if(momentum < 2) return
+      setTimeout(()=>this.applyMomentum(momentum*0.9), 23)
    }
 
    autoTimelineFlow = () => {
@@ -264,7 +263,7 @@ export class VideoAnalyzerPage {
          let curr = this.video_in.currentTime*this.speed
          this.timelineNob.style.right = `${curr}px`
       }
-      setTimeout(this.autoTimelineFlow,23) // esto dicta los fps
+      setTimeout(this.autoTimelineFlow,23) // esto dicta los fps    1000/23
    }
 
    manualTimelineFlow = async (e) => {
@@ -278,8 +277,6 @@ export class VideoAnalyzerPage {
 
       let newPosition = Number(this.timelineNob.style.right.substring(0,this.timelineNob.style.right.length-2))+increment
       this.timelineNob.style.right = `${newPosition}px`
-      console.log("this.momentum: ", this.momentum);
-      console.log("increment: ", increment);
       let sum = this.momentum.length ? this.momentum.reduce((a,b)=>a+b)/10 : 0
       if((sum<=0 && increment<=0) || (sum>=0 && increment>=0))
          this.momentum.push(increment)
