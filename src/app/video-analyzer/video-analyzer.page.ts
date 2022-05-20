@@ -9,13 +9,16 @@ import { VideoResultPreviewerPage } from './video-result-previewer/video-result-
    styleUrls: ['./video-analyzer.page.scss'],
 })
 export class VideoAnalyzerPage {
+
+   @Input() esIOs = true
+
    btnPaint: HTMLElement
    btnLines: HTMLElement
    btnGrab: HTMLElement
    btnErase: HTMLElement
    btnRecord: HTMLElement
-   btnClear: HTMLElement;
-   btnUndo: HTMLElement;
+   btnClear: HTMLElement
+   btnUndo: HTMLElement
 
    slider: any
    colorPicker: any
@@ -130,7 +133,7 @@ export class VideoAnalyzerPage {
       // devices.enumerateDevices().then(devices => {
       //    devices.forEach(device => { console.log(device.kind.toUpperCase(), device.label) })
       // }).catch(err => { console.log(err.name, err.message. err) })
-      // console.log(MediaRecorder.isTypeSupported('video/webm;codecs=h264'))
+      // console.log(MediaRecorder.isTypeSupported('video/mp4;webm;codecs=h264'))
       
       const audioStream = await devices.getUserMedia({
          audio: true,
@@ -145,7 +148,7 @@ export class VideoAnalyzerPage {
          bitsPerSecond: 812800000,  //Clamping calculated audio bitrate (800000bps) to the maximum (128000bps)
          audioBitsPerSecond: 128000, // A EDITAR!
          videoBitsPerSecond: 800000000,
-         mimeType: 'video/webm; codecs=vp9' 
+         mimeType: this.esIOs ? 'video/mp4' : 'video/webm; codecs=vp9'
       } // codecs=vp9
       
       this.mediaRecorder = new MediaRecorder(combinedStream, options)
@@ -159,7 +162,7 @@ export class VideoAnalyzerPage {
       // https://www.npmjs.com/package/webm-to-mp4
       // ffmpeg -i input.webm -preset superfast output.mp4 !!! seguramente lo mejor
       this.mediaRecorder.onstop = (ev) => {
-         const blob = new Blob(chunks, { 'type': 'video/webm; codecs=vp9' })
+         const blob = new Blob(chunks, { 'type': (this.esIOs ? 'video/mp4' : 'video/webm; codecs=vp9') })
          const src = window.URL.createObjectURL(blob)
          // que pase al vídeo resultado !!!
          this.openVideoResultModal(src)
